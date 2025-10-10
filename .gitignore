@@ -1,0 +1,41 @@
+# Build directories
+build/
+Output/
+x64/
+Debug/
+Release/
+
+# Generated files
+*.aps
+*.ilk
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.vspscc
+*.vssscc
+*.metagen
+*.ncb
+*.opensdf
+*.sdf
+*.suo
+
+# User files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Installer outputs
+*.iss
+*.zip
+*.exe
+
+# Local config
+config.json
