@@ -1,35 +1,39 @@
-#include "../include/TrayIcon.h"
+﻿#include "../include/TrayIcon.h"
 #include <shellapi.h>
+#include <winuser.h>
 
 bool TrayIcon::Initialize(ClickCallback cb) {
   callback = cb;
 
   // 创建隐藏窗口
-  WNDCLASSEX wc = {sizeof(WNDCLASSEX)};
+  WNDCLASSEXW wc = {sizeof(WNDCLASSEX)};
   wc.lpfnWndProc = WindowProc;
   wc.hInstance = GetModuleHandle(nullptr);
   wc.lpszClassName = L"VirtualDesktopSwitcherTrayIcon";
 
-  if (!RegisterClassEx(&wc)) {
+  if (!RegisterClassExW(&wc)) {
     return false;
   }
 
-  hWnd = CreateWindowEx(0, wc.lpszClassName, nullptr, 0, 0, 0, 0, 0,
-                        HWND_MESSAGE, nullptr, GetModuleHandle(nullptr), this);
+  hWnd = CreateWindowExW(0, wc.lpszClassName, nullptr, 0, 0, 0, 0, 0,
+                         HWND_MESSAGE, nullptr, GetModuleHandle(nullptr), this);
 
   if (!hWnd) {
     return false;
   }
 
   // 初始化托盘图标
-  iconData.cbSize = sizeof(NOTIFYICONDATA);
+  iconData.cbSize = sizeof(NOTIFYICONDATAW);
   iconData.hWnd = hWnd;
   iconData.uID = 1;
   iconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
   iconData.uCallbackMessage = WM_APP + 1;
-  iconData.hIcon = LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(1));
+  iconData.hIcon =
+      LoadIconW(reinterpret_cast<HINSTANCE>(GetModuleHandle(nullptr)),
+                MAKEINTRESOURCE(1));
 
-  wcscpy_s(iconData.szTip, _countof(iconData.szTip), L"虚拟桌面切换器");
+  wcscpy_s(iconData.szTip, ARRAYSIZE(iconData.szTip),
+           L"Virtual Desktop Switcher");
 
   if (!Shell_NotifyIcon(NIM_ADD, &iconData)) {
     DestroyWindow(hWnd);
@@ -60,8 +64,8 @@ void TrayIcon::UpdateState(bool enabled) {
 
 void TrayIcon::ShowNotification(const std::wstring &message) {
   iconData.uFlags = NIF_INFO;
-  wcscpy_s(iconData.szInfo, _countof(iconData.szInfo), message.c_str());
-  wcscpy_s(iconData.szInfoTitle, _countof(iconData.szInfoTitle),
+  wcscpy_s(iconData.szInfo, ARRAYSIZE(iconData.szInfo), message.c_str());
+  wcscpy_s(iconData.szInfoTitle, ARRAYSIZE(iconData.szInfoTitle),
            L"虚拟桌面切换器");
   iconData.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
   Shell_NotifyIcon(NIM_MODIFY, &iconData);
@@ -76,15 +80,20 @@ LRESULT CALLBACK TrayIcon::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
           ->CreateMenu();
       break;
 
-    case WM_LBUTTONDBLCLK:
-      if (callback) {
-        callback();
+    case WM_LBUTTONDBLCLK: {
+      auto pThis =
+          reinterpret_cast<TrayIcon *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+      if (pThis && pThis->callback) {
+        pThis->callback();
       }
       break;
     }
+    }
   } else if (uMsg == WM_COMMAND) {
-    if (LOWORD(wParam) == 1 && callback) {
-      callback();
+    auto pThis =
+        reinterpret_cast<TrayIcon *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+    if (LOWORD(wParam) == 1 && pThis && pThis->callback) {
+      pThis->callback();
     } else if (LOWORD(wParam) == 2) {
       PostQuitMessage(0);
     }

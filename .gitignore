@@ -39,3 +39,6 @@ Release/
 
 # Local config
 config.json
+
+.cache
+build

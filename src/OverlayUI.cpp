@@ -1,4 +1,5 @@
-#include "../include/OverlayUI.h"
+﻿#define NOMINMAX
+#include "OverlayUI.h"
 #include <algorithm>
 #include <wincodec.h>
 
@@ -72,7 +73,9 @@ void OverlayUI::Render() {
     pRenderTarget->DrawLine(segment.start, segment.end, pBrush, lineWidth);
 
     // 更新透明度
-    segment.opacity = std::max(0.0f, segment.opacity - fadeSpeed);
+    segment.opacity = (segment.opacity - fadeSpeed) > 0.0f
+                          ? (segment.opacity - fadeSpeed)
+                          : 0.0f;
   }
 
   // 移除完全透明的线段
