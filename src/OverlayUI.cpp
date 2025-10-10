@@ -1,7 +1,6 @@
-#include "OverlayUI.h"
+#include "../include/OverlayUI.h"
 #include <algorithm>
 #include <wincodec.h>
-
 
 // 窗口类名
 const wchar_t OVERLAY_WINDOW_CLASS[] = L"VirtualDesktopSwitcherOverlay";
@@ -13,19 +12,19 @@ bool OverlayUI::Initialize() {
   }
 
   // 创建透明窗口
-  WNDCLASSEX wcex = {sizeof(WNDCLASSEX)};
+  WNDCLASSEXW wcex = {sizeof(WNDCLASSEXW)};
   wcex.style = CS_HREDRAW | CS_VREDRAW;
   wcex.lpfnWndProc = WndProc;
   wcex.hInstance = GetModuleHandle(nullptr);
   wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wcex.lpszClassName = OVERLAY_WINDOW_CLASS;
-  RegisterClassEx(&wcex);
+  RegisterClassExW(&wcex);
 
-  hWnd = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
-                        OVERLAY_WINDOW_CLASS, L"DesktopSwitcherOverlay",
-                        WS_POPUP, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-                        GetSystemMetrics(SM_CYSCREEN), nullptr, nullptr,
-                        GetModuleHandle(nullptr), this);
+  hWnd = CreateWindowExW(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+                         OVERLAY_WINDOW_CLASS, L"DesktopSwitcherOverlay",
+                         WS_POPUP, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+                         GetSystemMetrics(SM_CYSCREEN), nullptr, nullptr,
+                         GetModuleHandle(nullptr), this);
 
   if (!hWnd)
     return false;
@@ -65,7 +64,7 @@ void OverlayUI::Render() {
     return;
 
   pRenderTarget->BeginDraw();
-  pRenderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
+  pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
 
   // 绘制轨迹
   for (auto &segment : trailSegments) {
@@ -89,7 +88,7 @@ void OverlayUI::Clear() {
   trailSegments.clear();
   if (pRenderTarget) {
     pRenderTarget->BeginDraw();
-    pRenderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
+    pRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black, 0.0f));
     pRenderTarget->EndDraw();
   }
 }

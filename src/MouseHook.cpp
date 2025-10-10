@@ -1,13 +1,5 @@
-#include "MouseHook.h"
+#include "../include/MouseHook.h"
 #include <stdexcept>
-
-// 静态成员初始化
-HHOOK MouseHook::hookHandle = nullptr;
-MouseHook::EventCallback MouseHook::callback = nullptr;
-POINT MouseHook::lastPosition = {0, 0};
-bool MouseHook::isTracking = false;
-int MouseHook::sensitivity = 50;
-int MouseHook::threshold = 5;
 
 bool MouseHook::Initialize(EventCallback cb) {
     if (hookHandle != nullptr) {

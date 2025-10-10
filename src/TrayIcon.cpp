@@ -1,11 +1,5 @@
-#include "TrayIcon.h"
+#include "../include/TrayIcon.h"
 #include <shellapi.h>
-
-// 静态成员初始化
-HWND TrayIcon::hWnd = nullptr;
-NOTIFYICONDATA TrayIcon::iconData = {0};
-TrayIcon::ClickCallback TrayIcon::callback = nullptr;
-bool TrayIcon::isEnabled = true;
 
 bool TrayIcon::Initialize(ClickCallback cb) {
   callback = cb;
@@ -33,10 +27,9 @@ bool TrayIcon::Initialize(ClickCallback cb) {
   iconData.uID = 1;
   iconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
   iconData.uCallbackMessage = WM_APP + 1;
-  iconData.hIcon =
-      LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(1)); // 使用应用图标
+  iconData.hIcon = LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(1));
 
-  wcscpy_s(iconData.szTip, L"虚拟桌面切换器");
+  wcscpy_s(iconData.szTip, _countof(iconData.szTip), L"虚拟桌面切换器");
 
   if (!Shell_NotifyIcon(NIM_ADD, &iconData)) {
     DestroyWindow(hWnd);
@@ -67,8 +60,9 @@ void TrayIcon::UpdateState(bool enabled) {
 
 void TrayIcon::ShowNotification(const std::wstring &message) {
   iconData.uFlags = NIF_INFO;
-  wcscpy_s(iconData.szInfo, message.c_str());
-  wcscpy_s(iconData.szInfoTitle, L"虚拟桌面切换器");
+  wcscpy_s(iconData.szInfo, _countof(iconData.szInfo), message.c_str());
+  wcscpy_s(iconData.szInfoTitle, _countof(iconData.szInfoTitle),
+           L"虚拟桌面切换器");
   iconData.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
   Shell_NotifyIcon(NIM_MODIFY, &iconData);
 }
@@ -102,9 +96,9 @@ LRESULT CALLBACK TrayIcon::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 void TrayIcon::CreateMenu() {
   HMENU hMenu = CreatePopupMenu();
   if (hMenu) {
-    AppendMenu(hMenu, MF_STRING, 1, isEnabled ? L"禁用" : L"启用");
-    AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
-    AppendMenu(hMenu, MF_STRING, 2, L"退出");
+    AppendMenuW(hMenu, MF_STRING, 1, isEnabled ? L"禁用" : L"启用");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenuW(hMenu, MF_STRING, 2, L"退出");
 
     POINT pt;
     GetCursorPos(&pt);
@@ -118,7 +112,6 @@ void TrayIcon::CreateMenu() {
 
 void TrayIcon::UpdateIcon() {
   iconData.hIcon =
-      LoadIcon(GetModuleHandle(nullptr),
-               MAKEINTRESOURCE(isEnabled ? 1 : 2)); // 使用不同状态图标
+      LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(isEnabled ? 1 : 2));
   Shell_NotifyIcon(NIM_MODIFY, &iconData);
 }

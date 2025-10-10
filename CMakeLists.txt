@@ -4,8 +4,6 @@ project(VirtualDesktopSwitcher)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 查找依赖库
-find_package(nlohmann_json REQUIRED)
 
 # 包含Direct2D和COM相关库
 if(WIN32)
@@ -21,17 +19,19 @@ endif()
 
 # 添加可执行文件
 add_executable(VirtualDesktopSwitcher
-    VirtualDesktopSwitcher.cpp
-    MouseHook.cpp
-    DesktopManager.cpp
-    OverlayUI.cpp
-    Settings.cpp
-    TrayIcon.cpp
-    TestRunner.cpp
+    src/VirtualDesktopSwitcher.cpp
+    src/MouseHook.cpp
+    src/DesktopManager.cpp
+    src/OverlayUI.cpp
+    src/Settings.cpp
+    src/TrayIcon.cpp
 )
 
+# 包含目录
+include_directories(include)
+
 target_include_directories(VirtualDesktopSwitcher PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(VirtualDesktopSwitcher PRIVATE ${PLATFORM_LIBS} nlohmann_json::nlohmann_json)
+target_link_libraries(VirtualDesktopSwitcher PRIVATE ${PLATFORM_LIBS})
 
 # 安装目标
 install(TARGETS VirtualDesktopSwitcher
@@ -43,8 +43,8 @@ if(WIN32)
     # 添加资源文件
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/resource.rc
-        COMMAND echo "1 ICON \"icon.ico\"" > ${CMAKE_CURRENT_BINARY_DIR}/resource.rc
-        COMMAND echo "2 ICON \"disabled_icon.ico\"" >> ${CMAKE_CURRENT_BINARY_DIR}/resource.rc
+        COMMAND echo "1 ICON \"../resources/icon.ico\"" > ${CMAKE_CURRENT_BINARY_DIR}/resource.rc
+        COMMAND echo "2 ICON \"../resources/disabled_icon.ico\"" >> ${CMAKE_CURRENT_BINARY_DIR}/resource.rc
     )
     
     add_custom_target(Resources DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/resource.rc)

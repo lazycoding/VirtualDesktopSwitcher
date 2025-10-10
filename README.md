@@ -13,6 +13,31 @@
 - CMake 3.15+
 - Visual Studio 2019+
 
+## 项目结构
+```
+.
+├── CMakeLists.txt
+├── README.md
+├── build/           # 构建目录
+├── include/         # 公共头文件
+│   ├── DesktopManager.h
+│   ├── MouseHook.h
+│   ├── OverlayUI.h  
+│   ├── Settings.h
+│   ├── TrayIcon.h
+│   └── VirtualDesktopSwitcher.h
+├── resources/       # 资源文件
+│   ├── icon.ico
+│   └── disabled_icon.ico
+└── src/             # 源代码
+    ├── DesktopManager.cpp
+    ├── MouseHook.cpp
+    ├── OverlayUI.cpp
+    ├── Settings.cpp
+    ├── TrayIcon.cpp
+     └── VirtualDesktopSwitcher.cpp
+```
+
 ## 构建步骤
 ```bash
 mkdir build

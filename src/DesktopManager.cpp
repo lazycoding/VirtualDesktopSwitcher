@@ -1,28 +1,15 @@
-#include "DesktopManager.h"
+#include "../include/DesktopManager.h"
 #include <ShlObj.h>
 #include <algorithm>
 #include <comdef.h>
 
+#include <comdef.h>
+#include <shobjidl_core.h>
 
-// 虚拟桌面COM接口定义
-MIDL_INTERFACE("a5cd92ff-29be-454c-8d04-d82879fb3f1b")
-IVirtualDesktopManager : public IUnknown {
-public:
-  virtual HRESULT STDMETHODCALLTYPE IsWindowOnCurrentVirtualDesktop(
-      HWND topLevelWindow, BOOL * onCurrentDesktop) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetWindowDesktopId(HWND topLevelWindow,
-                                                       GUID * desktopId) = 0;
-  virtual HRESULT STDMETHODCALLTYPE MoveWindowToDesktop(HWND topLevelWindow,
-                                                        REFGUID desktopId) = 0;
-};
+#pragma comment(lib, "ole32.lib")
 
-MIDL_INTERFACE("af8da486-95bb-4460-b3b7-6e7a6b2962b5")
-IVirtualDesktopManagerInternal : public IUnknown {
-public:
-  virtual HRESULT STDMETHODCALLTYPE GetDesktops(IObjectArray * *desktops) = 0;
-  virtual HRESULT STDMETHODCALLTYPE GetCurrentDesktop(GUID * desktopId) = 0;
-  virtual HRESULT STDMETHODCALLTYPE SwitchDesktop(GUID * desktopId) = 0;
-};
+// 使用Windows SDK中已定义的接口
+using IVirtualDesktopManagerInternal = IUnknown;
 
 bool DesktopManager::Initialize() {
   HRESULT hr = CoCreateInstance(CLSID_VirtualDesktopManager, nullptr,
@@ -30,12 +17,25 @@ bool DesktopManager::Initialize() {
   if (FAILED(hr))
     return false;
 
-  // 获取内部接口(Windows 10/11实现不同)
+  // 获取虚拟桌面管理器内部接口
+  static const CLSID CLSID_ImmersiveShell = {
+      0xC2F03A33,
+      0x21F5,
+      0x47FA,
+      {0xB4, 0xBB, 0x15, 0x63, 0x62, 0xA2, 0xF2, 0x39}};
+  static const IID IID_IVirtualDesktopManagerInternal = {
+      0xAF8DA486,
+      0x95BB,
+      0x4460,
+      {0xB3, 0xB7, 0x6E, 0x7A, 0x6B, 0x29, 0x62, 0xB5}};
+
   IUnknown *pUnknown = nullptr;
   hr = CoCreateInstance(CLSID_ImmersiveShell, nullptr, CLSCTX_LOCAL_SERVER,
                         IID_PPV_ARGS(&pUnknown));
   if (SUCCEEDED(hr)) {
-    pUnknown->QueryInterface(IID_PPV_ARGS(&pDesktopManagerInternal));
+    pUnknown->QueryInterface(
+        IID_IVirtualDesktopManagerInternal,
+        reinterpret_cast<void **>(&pDesktopManagerInternal));
     pUnknown->Release();
   }
 

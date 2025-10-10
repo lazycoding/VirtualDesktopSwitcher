@@ -1,7 +1,8 @@
 #pragma once
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <string>
 
+using json = nlohmann::json;
 
 class Settings {
 public:
@@ -25,5 +26,5 @@ private:
   std::wstring GetConfigPath() const;
 
   Config config;
-  nlohmann::json jsonData;
+  json jsonData;
 };
