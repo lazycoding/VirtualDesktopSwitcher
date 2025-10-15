@@ -1,6 +1,6 @@
 ﻿#include "TrayIcon.h"
 #include <shellapi.h>
-
+#include "resource.h"
 namespace VirtualDesktop {
 
     TrayIcon::TrayIcon(HINSTANCE hInstance, const std::wstring& tooltip)
@@ -32,12 +32,12 @@ namespace VirtualDesktop {
         m_notifyIconData.uID = 1;
         m_notifyIconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
         m_notifyIconData.uCallbackMessage = WM_APP + 1;
-        wcsncpy_s(
-            m_notifyIconData.szTip,                      // destination buffer
-            sizeof(m_notifyIconData.szTip) / sizeof(wchar_t), // size of destination buffer in wchar_t
-            m_tooltip.c_str(),                           // source string
-            _TRUNCATE                                    // count (truncate if needed)
-        );
+        wcsncpy_s(m_notifyIconData.szTip,
+            sizeof(m_notifyIconData.szTip) / sizeof(wchar_t), m_tooltip.c_str(),
+            _TRUNCATE);
+
+        // Load custom icon from resources
+        m_notifyIconData.hIcon = LoadIcon(nullptr, MAKEINTRESOURCEW(IDI_MAIN));
 
         return Shell_NotifyIconW(NIM_ADD, &m_notifyIconData);
     }
@@ -57,31 +57,54 @@ namespace VirtualDesktop {
     void TrayIcon::showNotification(const std::wstring& title,
         const std::wstring& message) {
         m_notifyIconData.uFlags = NIF_INFO;
-        wcsncpy_s(
-            m_notifyIconData.szInfo,
-            sizeof(m_notifyIconData.szInfo) / sizeof(wchar_t),
-            message.c_str(),
-            _TRUNCATE
-        );
-        wcsncpy_s(
-            m_notifyIconData.szInfoTitle,
+        wcsncpy_s(m_notifyIconData.szInfo,
+            sizeof(m_notifyIconData.szInfo) / sizeof(wchar_t), message.c_str(),
+            _TRUNCATE);
+        wcsncpy_s(m_notifyIconData.szInfoTitle,
             sizeof(m_notifyIconData.szInfoTitle) / sizeof(wchar_t),
-            title.c_str(),
-            _TRUNCATE
-        );
+            title.c_str(), _TRUNCATE);
         Shell_NotifyIconW(NIM_MODIFY, &m_notifyIconData);
     }
 
     LRESULT CALLBACK TrayIcon::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam,
         LPARAM lParam) {
-        if (uMsg == WM_APP + 1 && lParam == WM_RBUTTONUP) {
+        if (uMsg == WM_CREATE) {
+            // Store the pointer passed via CreateWindow lpParam into GWLP_USERDATA
+            CREATESTRUCTW* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
+            if (cs && cs->lpCreateParams) {
+                SetWindowLongPtr(hwnd, GWLP_USERDATA,
+                    reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
+            }
+        }
+        else {
             auto* pThis =
                 reinterpret_cast<TrayIcon*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-            if (pThis) {
-                pThis->createMenu();
+            if (uMsg == WM_APP + 1 && lParam == WM_RBUTTONUP) {
+                if (pThis) {
+                    pThis->createMenu();
+                }
+            }
+            else if (uMsg == WM_COMMAND) {
+                if (pThis) {
+                    int id = LOWORD(wParam);
+                    pThis->onCommand(id);
+                }
             }
         }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    void TrayIcon::onCommand(int id)
+    {
+        if (id >= 1) {
+            size_t idx = static_cast<size_t>(id - 1);
+            if (idx < m_menuItems.size()) {
+                auto& cb = m_menuItems[idx].second;
+                if (cb) {
+                    cb();
+                }
+            }
+        }
     }
 
     void TrayIcon::createMenu() {

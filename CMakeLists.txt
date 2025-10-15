@@ -1,5 +1,16 @@
-cmake_minimum_required(VERSION 3.15)
+﻿cmake_minimum_required(VERSION 3.15)
 project(VirtualDesktopSwitcher LANGUAGES CXX)
+
+# Include FetchContent module
+include(FetchContent)
+
+# Download and install spdlog
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.13.0
+)
+FetchContent_MakeAvailable(spdlog)
 
 # Set C++ standard and compiler options
 set(CMAKE_CXX_STANDARD 20)
@@ -8,7 +19,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Project warnings
 if(MSVC)
-    add_compile_options(/W4 /WX)
+    add_compile_options(/W4 /WX /wd4267)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -23,9 +34,13 @@ file(GLOB_RECURSE SOURCES
 file(GLOB_RECURSE HEADERS 
     "src/*.h" 
 )
+file(GLOB_RECURSE RESOURCES
+    "src/Resources/*.rc"
+)
 
 # Main executable
-add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS})
+add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
+target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
 
 # Windows specific libraries
 if(WIN32)

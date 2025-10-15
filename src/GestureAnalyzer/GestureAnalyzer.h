@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <vector>
 
-
 namespace VirtualDesktop {
 
 /**
@@ -13,7 +12,7 @@ public:
   /**
    * @brief Possible gesture directions
    */
-  enum class Direction { Left, Right, None };
+  enum class Direction { Left, Right, Up, Down, None };
 
   /**
    * @brief Adds a new mouse position to the gesture analysis
@@ -32,6 +31,13 @@ public:
    * @brief Clears all collected positions
    */
   void clearPositions();
+
+  /**
+   * @brief Checks if a gesture is currently in progress
+   * @return true if positions have been recorded (gesture in progress)
+   * @return false if no positions recorded (no active gesture)
+   */
+  bool isGestureInProgress() const;
 
 private:
   std::vector<std::pair<int32_t, int32_t>> m_positions;
