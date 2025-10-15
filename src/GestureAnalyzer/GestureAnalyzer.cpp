@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #include "GestureAnalyzer.h"
 #include <algorithm>
 #include <cmath>
@@ -17,6 +18,7 @@ void GestureAnalyzer::addPosition(int32_t x, int32_t y) {
 }
 
 GestureAnalyzer::Direction GestureAnalyzer::analyzeGesture() const {
+  // Simplified: only determine horizontal direction (Left / Right / None)
   constexpr size_t MIN_POSITIONS = 3;
   if (m_positions.size() < MIN_POSITIONS) {
     SPDLOG_DEBUG("Not enough positions to analyze gesture ({} < {})",
@@ -24,50 +26,28 @@ GestureAnalyzer::Direction GestureAnalyzer::analyzeGesture() const {
     return Direction::None;
   }
 
-  // Calculate movement vectors and velocities
-  std::vector<std::pair<double, double>> velocities;
-  for (size_t i = 1; i < m_positions.size(); ++i) {
-    double dx = m_positions[i].first - m_positions[i - 1].first;
-    double dy = m_positions[i].second - m_positions[i - 1].second;
-    velocities.emplace_back(dx, dy);
-  }
+  // Total displacement from first to last recorded position
+  int32_t totalDx = m_positions.back().first - m_positions.front().first;
+  int32_t totalDy = m_positions.back().second - m_positions.front().second;
 
-  // Calculate average velocity and total displacement
-  double avgVx = 0.0, avgVy = 0.0;
-  double totalDx = m_positions.back().first - m_positions.front().first;
-  double totalDy = m_positions.back().second - m_positions.front().second;
+  SPDLOG_DEBUG("Gesture analysis - totalDx: {}, totalDy: {}", totalDx,
+               totalDy);
 
-  for (const auto &v : velocities) {
-    avgVx += v.first;
-    avgVy += v.second;
-  }
-  avgVx /= velocities.size();
-  avgVy /= velocities.size();
-
-  // Calculate velocity magnitude and direction angle
-  double velocityMagnitude = std::sqrt(avgVx * avgVx + avgVy * avgVy);
-  double angle = std::atan2(avgVy, avgVx) * 180.0 / M_PI;
-
-  SPDLOG_DEBUG("Gesture analysis - totalDx: {:.2f}, totalDy: {:.2f}, velocity: "
-               "{:.2f}, angle: {:.2f}°",
-               totalDx, totalDy, velocityMagnitude, angle);
-
-  // Check if movement is significant enough
-  if (velocityMagnitude < MIN_SWIPE_DISTANCE) {
-    SPDLOG_DEBUG("Movement too small to be considered a gesture");
+  // Only consider significant horizontal movement as a swipe
+  if (std::abs(totalDx) < MIN_SWIPE_DISTANCE) {
+    SPDLOG_DEBUG("Horizontal movement too small to be considered a gesture");
     return Direction::None;
   }
 
-  // Determine direction based on angle ranges (like use-gesture library)
-  if (angle >= -45 && angle < 45) {
+  if (std::abs(totalDy) > std::abs(totalDx)) {
+    // Vertical movement dominates, ignore for horizontal-only detection
+    SPDLOG_DEBUG("Vertical movement dominates, ignoring gesture");
+    return Direction::None;
+  }
+
+  if (totalDx > 0) {
     SPDLOG_DEBUG("Detected Right gesture");
     return Direction::Right;
-  } else if (angle >= 45 && angle < 135) {
-    SPDLOG_DEBUG("Detected Down gesture");
-    return Direction::Down;
-  } else if (angle >= -135 && angle < -45) {
-    SPDLOG_DEBUG("Detected Up gesture");
-    return Direction::Up;
   } else {
     SPDLOG_DEBUG("Detected Left gesture");
     return Direction::Left;

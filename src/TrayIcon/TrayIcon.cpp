@@ -1,6 +1,8 @@
 ﻿#include "TrayIcon.h"
 #include <shellapi.h>
 #include "resource.h"
+#include <windows.h>
+
 namespace VirtualDesktop {
 
     TrayIcon::TrayIcon(HINSTANCE hInstance, const std::wstring& tooltip)
@@ -21,8 +23,9 @@ namespace VirtualDesktop {
             return false;
         }
 
+        // Pass 'this' as lpParam so WM_CREATE handler can store the pointer in GWLP_USERDATA
         m_hwnd = CreateWindowW(className, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr,
-            m_hInstance, nullptr);
+            m_hInstance, this);
         if (!m_hwnd) {
             return false;
         }
@@ -36,8 +39,34 @@ namespace VirtualDesktop {
             sizeof(m_notifyIconData.szTip) / sizeof(wchar_t), m_tooltip.c_str(),
             _TRUNCATE);
 
-        // Load custom icon from resources
-        m_notifyIconData.hIcon = LoadIcon(nullptr, MAKEINTRESOURCEW(IDI_MAIN));
+        // Robust icon loading: ensure we have a valid module handle, try LoadImageW
+        HINSTANCE hInst = m_hInstance ? m_hInstance : GetModuleHandleW(NULL);
+
+        HICON hIcon = nullptr;
+        int preferredSizes[] = {
+            GetSystemMetrics(SM_CXSMICON),
+            GetSystemMetrics(SM_CXICON),
+            32, 48, 256
+        };
+        for (int size : preferredSizes) {
+            if (size <= 0) continue;
+            hIcon = static_cast<HICON>(LoadImageW(
+                hInst, MAKEINTRESOURCEW(IDI_MAIN), IMAGE_ICON,
+                size, size, LR_SHARED | LR_DEFAULTCOLOR));
+            if (hIcon) break;
+        }
+
+        if (!hIcon) {
+            // Try default size from resources
+            hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_MAIN));
+        }
+
+        if (!hIcon) {
+            // As a last resort use the standard application icon
+            hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        }
+
+        m_notifyIconData.hIcon = hIcon;
 
         return Shell_NotifyIconW(NIM_ADD, &m_notifyIconData);
     }
@@ -121,4 +150,4 @@ namespace VirtualDesktop {
         DestroyMenu(hMenu);
     }
 
-} // namespace VirtualDesktop
+} // namespace VirtualDesktop} // namespace VirtualDesktop

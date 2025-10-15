@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.15)
-project(VirtualDesktopSwitcher LANGUAGES CXX)
+project(VirtualDesktopSwitcher LANGUAGES CXX RC)
 
 # Include FetchContent module
 include(FetchContent)
@@ -13,7 +13,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 # Set C++ standard and compiler options
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -34,12 +34,14 @@ file(GLOB_RECURSE SOURCES
 file(GLOB_RECURSE HEADERS 
     "src/*.h" 
 )
-file(GLOB_RECURSE RESOURCES
-    "src/Resources/*.rc"
+
+file(GLOB_RECURSE RESOURCES 
+    "src/*.rc"
 )
 
-# Main executable
+# Main executable (WIN32 hides console)
 add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
+
 target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
 
 # Windows specific libraries
@@ -53,6 +55,8 @@ if(WIN32)
         UNICODE
         WINVER=0x0A00
         _WIN32_WINNT=0x0A00
+        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+        _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
     )
 endif()
 

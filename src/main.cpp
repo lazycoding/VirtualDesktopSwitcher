@@ -5,6 +5,7 @@
 #include "Settings/Settings.h"
 #include "TrayIcon/TrayIcon.h"
 #include <Windows.h>
+#include <spdlog/spdlog.h>
 
 namespace VirtualDesktop {
 
@@ -16,6 +17,7 @@ namespace VirtualDesktop {
         }
 
         bool initialize() {
+
             if (!m_settings.load(L"config.json")) {
                 return false;
             }
