@@ -1,7 +1,6 @@
 #pragma once
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 #include <string>
-
 
 namespace VirtualDesktop {
 
@@ -11,23 +10,18 @@ namespace VirtualDesktop {
 class Settings {
 public:
   /**
-   * @brief Gets the singleton instance
-   */
-  static Settings &GetInstance();
-
-  /**
    * @brief Loads settings from config file
    * @param filePath Path to config file
    * @return true if loaded successfully
    */
-  bool load(const std::string &filePath);
+  bool load(const std::wstring &filePath);
 
   /**
    * @brief Saves settings to config file
    * @param filePath Path to config file
    * @return true if saved successfully
    */
-  bool save(const std::string &filePath) const;
+  bool save(const std::wstring &filePath) const;
 
   /**
    * @brief Gets gesture sensitivity
@@ -45,18 +39,18 @@ public:
    * @brief Gets overlay color
    * @return Color in hex format (#RRGGBBAA)
    */
-  std::string getOverlayColor() const;
+  std::wstring getOverlayColor() const;
 
   /**
    * @brief Sets overlay color
    * @param color Color in hex format (#RRGGBBAA)
    */
-  void setOverlayColor(const std::string &color);
+  void setOverlayColor(const std::wstring &color);
 
-private:
   Settings() = default;
   ~Settings() = default;
 
+private:
   // Disable copy and move
   Settings(const Settings &) = delete;
   Settings &operator=(const Settings &) = delete;

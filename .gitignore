@@ -1,0 +1,68 @@
+# Build directories
+build/
+bin/
+lib/
+*.exe
+*.out
+*.a
+*.so
+*.dll
+*.lib
+*.dylib
+
+# IDE specific files
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+*.vcproj
+*.opensdf
+*.sdf
+*.filters
+
+# Compilation artifacts
+*.o
+*.obj
+*.pch
+*.ilk
+*.pdb
+*.ipch
+*.exp
+*.idb
+*.tlog
+*.lastbuildstate
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+Makefile
+
+# Dependency directories
+deps/
+
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and diagnostics
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Local development config files
+config.json
+local_settings.*
+.env
+
+# Unit test coverage
+coverage/
+*.gcno
+*.gcda
+.vs

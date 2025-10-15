@@ -1,6 +1,8 @@
 #include "Settings.h"
+#include <Windows.h>
 #include <fstream>
-#include <stdexcept>
+#include <string>
+
 
 namespace VirtualDesktop {
 
@@ -9,31 +11,34 @@ constexpr const char *DEFAULT_CONFIG = R"({
         "gesture_sensitivity": 5,
         "overlay_color": "#6495EDAA"
     })";
-}
 
-Settings &Settings::GetInstance() {
-  static Settings instance;
-  return instance;
+// unicode to utf8
+std::string utf8_encode(const std::wstring &wide_str) {
+  int size_needed = WideCharToMultiByte(
+      CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), NULL, 0, NULL, NULL);
+  std::string strTo(size_needed, 0);
+  WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), &strTo[0],
+                      size_needed, NULL, NULL);
+  return strTo;
 }
-
-bool Settings::load(const std::string &filePath) {
+} // namespace
+bool Settings::load(const std::wstring &filePath) {
   try {
-    std::ifstream file(filePath);
+    std::ifstream file(filePath.c_str());
     if (!file.is_open()) {
       m_config = nlohmann::json::parse(DEFAULT_CONFIG);
-      return false;
+    } else {
+      m_config = nlohmann::json::parse(file);
     }
-    m_config = nlohmann::json::parse(file);
-    return true;
   } catch (const std::exception &) {
-    m_config = nlohmann::json::parse(DEFAULT_CONFIG);
     return false;
   }
+  return true;
 }
 
-bool Settings::save(const std::string &filePath) const {
+bool Settings::save(const std::wstring &filePath) const {
   try {
-    std::ofstream file(filePath);
+    std::ofstream file(filePath.c_str());
     if (!file.is_open()) {
       return false;
     }
@@ -52,12 +57,13 @@ void Settings::setGestureSensitivity(int value) {
   m_config["gesture_sensitivity"] = std::clamp(value, 1, 10);
 }
 
-std::string Settings::getOverlayColor() const {
-  return m_config.value("overlay_color", "#6495EDAA");
+std::wstring Settings::getOverlayColor() const {
+  std::string color = m_config.value("overlay_color", "#6495EDAA");
+  return std::wstring(color.begin(), color.end());
 }
 
-void Settings::setOverlayColor(const std::string &color) {
-  if (color.size() == 9 && color[0] == '#') {
+void Settings::setOverlayColor(const std::wstring &color) {
+  if (color.size() == 9 && color[0] == L'#') {
     m_config["overlay_color"] = color;
   }
 }

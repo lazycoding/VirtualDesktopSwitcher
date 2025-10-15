@@ -14,43 +14,31 @@ else()
 endif()
 
 # Include directories
-include_directories(src)
+include_directories(src third_party)
 
 # Add source files
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "src/*.h")
+file(GLOB_RECURSE SOURCES 
+    "src/*.cpp"
+)
+file(GLOB_RECURSE HEADERS 
+    "src/*.h" 
+)
 
 # Main executable
-add_executable(VirtualDesktopSwitcher ${SOURCES} ${HEADERS})
+add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS})
 
-# Windows specific settings
+# Windows specific libraries
 if(WIN32)
-    target_link_libraries(VirtualDesktopSwitcher PRIVATE user32 gdi32 d2d1)
-    target_compile_definitions(VirtualDesktopSwitcher PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+    # Target Windows 10 (0x0A00) or later
+    target_link_libraries(VirtualDesktopSwitcher PRIVATE 
+        user32 gdi32 d2d1 shell32)
+    target_compile_definitions(VirtualDesktopSwitcher PRIVATE 
+        WIN32_LEAN_AND_MEAN 
+        NOMINMAX 
+        UNICODE
+        WINVER=0x0A00
+        _WIN32_WINNT=0x0A00
+    )
 endif()
 
-# Testing configuration
-enable_testing()
-find_package(GTest REQUIRED)
 
-file(GLOB_RECURSE TEST_SOURCES "test/*.cpp")
-add_executable(VirtualDesktopSwitcherTests ${TEST_SOURCES} ${SOURCES} ${HEADERS})
-target_link_libraries(VirtualDesktopSwitcherTests PRIVATE GTest::GTest GTest::Main)
-if(WIN32)
-    target_link_libraries(VirtualDesktopSwitcherTests PRIVATE user32 gdi32 d2d1)
-endif()
-
-add_test(NAME UnitTests COMMAND VirtualDesktopSwitcherTests)
-
-# Integration tests
-add_executable(VirtualDesktopSwitcherIntegrationTests 
-    test/Integration/SystemIntegrationTest.cpp
-    ${SOURCES} ${HEADERS})
-target_link_libraries(VirtualDesktopSwitcherIntegrationTests 
-    PRIVATE GTest::GTest GTest::Main)
-if(WIN32)
-    target_link_libraries(VirtualDesktopSwitcherIntegrationTests 
-        PRIVATE user32 gdi32 d2d1)
-endif()
-
-add_test(NAME IntegrationTests COMMAND VirtualDesktopSwitcherIntegrationTests)

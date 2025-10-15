@@ -1,7 +1,5 @@
 #include "MouseHook.h"
-#include <algorithm>
 #include <stdexcept>
-
 
 namespace VirtualDesktop {
 
@@ -10,7 +8,7 @@ MouseHook &MouseHook::GetInstance() {
   return instance;
 }
 
-bool MouseHook::Initialize() {
+bool MouseHook::initialize() {
   if (m_hook != nullptr) {
     return true;
   }
@@ -22,7 +20,7 @@ bool MouseHook::Initialize() {
   return true;
 }
 
-void MouseHook::Shutdown() {
+void MouseHook::shutdown() {
   if (m_hook != nullptr) {
     UnhookWindowsHookEx(m_hook);
     m_hook = nullptr;
