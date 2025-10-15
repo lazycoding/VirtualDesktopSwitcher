@@ -1,58 +1,100 @@
-# 虚拟桌面切换器
+# Virtual Desktop Switcher
 
-通过鼠标侧键滑动切换Windows虚拟桌面的工具
+A Windows utility that enables virtual desktop switching through mouse side-button gestures.
 
-## 功能特性
-- 鼠标侧键滑动切换桌面
-- 实时显示滑动轨迹
-- 系统托盘快捷控制
-- 个性化配置
+## Features
+- **Gesture-based Switching**: Use mouse side-button (XBUTTON1) with swipe gestures to switch virtual desktops
+- **Real-time Visual Feedback**: Direct2D overlay displays gesture trajectory
+- **System Tray Integration**: Tray icon with notification support and menu controls
+- **Customizable Settings**: JSON-based configuration for sensitivity and appearance
+- **Singleton Architecture**: Thread-safe mouse hook implementation
 
-## 编译要求
-- Windows 10/11 SDK
+## System Requirements
+- Windows 10/11 (64-bit)
 - CMake 3.15+
-- Visual Studio 2019+
+- Visual Studio 2019+ or compatible C++17 compiler
+- Windows SDK 10.0.19041.0+
 
-## 项目结构
+## Project Structure
 ```
 .
-├── CMakeLists.txt
-├── README.md
-├── build/           # 构建目录
-├── include/         # 公共头文件
-│   ├── DesktopManager.h
-│   ├── MouseHook.h
-│   ├── OverlayUI.h  
-│   ├── Settings.h
-│   ├── TrayIcon.h
-│   └── VirtualDesktopSwitcher.h
-├── resources/       # 资源文件
-│   ├── icon.ico
-│   └── disabled_icon.ico
-└── src/             # 源代码
-    ├── DesktopManager.cpp
-    ├── MouseHook.cpp
-    ├── OverlayUI.cpp
-    ├── Settings.cpp
-    ├── TrayIcon.cpp
-     └── VirtualDesktopSwitcher.cpp
+├── CMakeLists.txt              # CMake build configuration
+├── README.md                   # Project documentation
+├── .gitignore                  # Git ignore rules
+├── doc/                        # Documentation
+│   ├── virtual_desktop_switcher_architecture.md
+│   └── virtual_desktop_switcher_requirements.md
+├── src/                        # Source code (modular structure)
+│   ├── main.cpp                # Application entry point
+│   ├── DesktopManager/         # Virtual desktop operations
+│   ├── GestureAnalyzer/        # Mouse gesture recognition
+│   ├── MouseHook/              # Low-level mouse event capture
+│   ├── OverlayUI/              # Direct2D gesture visualization
+│   ├── Settings/               # JSON configuration management
+│   ├── TrayIcon/               # System tray integration
+│   └── res/                    # Application resources
+│       └── favicon.ico         # Application icon
+├── third_party/                # External dependencies
+│   └── nlohmann/               # JSON library
+│       └── json.hpp
+└── build/                      # Build output directory
 ```
 
-## 构建步骤
+## Build Instructions
+
+### Prerequisites
+- Install Visual Studio 2019 or later with C++ development tools
+- Ensure Windows SDK is installed
+- Install CMake 3.15 or later
+
+### Build Steps
 ```bash
+# Create build directory
 mkdir build
 cd build
+
+# Configure project
 cmake ..
+
+# Build release version
 cmake --build . --config Release
+
+# Optional: Build debug version
+cmake --build . --config Debug
 ```
 
-## 配置文件位置
-`%APPDATA%\VirtualDesktopSwitcher\config.json`
+## Configuration
+The application uses `config.json` for settings. Default location: `%APPDATA%\VirtualDesktopSwitcher\config.json`
 
-## 图标资源
-- `icon.ico` - 启用状态图标
-- `disabled_icon.ico` - 禁用状态图标
+### Available Settings
+```json
+{
+  "gestureSensitivity": 5,
+  "overlayColor": "#FF0000FF"
+}
+```
 
-## 快捷键
-- 双击托盘图标: 启用/禁用
-- 右键菜单: 更多选项
+## Usage
+1. Build the application using the instructions above
+2. Run the generated executable
+3. The application will start minimized to system tray
+4. Use mouse side-button (usually back button) with swipe gestures:
+   - Swipe left: Switch to previous virtual desktop
+   - Swipe right: Switch to next virtual desktop
+
+## Development Guidelines
+This project follows modern C++ best practices:
+- C++17 standard compliance
+- SOLID design principles
+- RAII resource management
+- Singleton and Observer patterns
+- Doxygen-style documentation
+- Modular architecture with clear separation of concerns
+
+## Dependencies
+- **nlohmann/json**: Header-only JSON library for configuration management
+- **spdlog**: Logging library (referenced in code)
+- **Windows API**: System-level functionality
+
+## License
+This project is provided for educational and development purposes.
