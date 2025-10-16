@@ -4,6 +4,7 @@
 #include <d2d1.h>
 #include <vector>
 #include <windows.h>
+#include <string>
 
 #pragma comment(lib, "d2d1.lib")
 
@@ -24,6 +25,9 @@ public:
     // 清除当前绘制内容
     void Clear();
 
+    // 设置轨迹颜色和线宽
+    void SetTrailStyle(const std::wstring& colorHex, float lineWidth);
+
 private:
     struct FPoint {
         float x, y;
@@ -38,6 +42,9 @@ private:
     void ComputeVirtualScreenRect();
     FPoint CatmullRom(const FPoint& p0, const FPoint& p1, const FPoint& p2,
         const FPoint& p3, float t);
+
+    // 辅助函数：将十六进制颜色字符串转换为D2D1_COLOR_F
+    D2D1_COLOR_F HexToColorF(const std::wstring& hex);
 
 private:
     HWND m_hwnd = nullptr;
@@ -54,6 +61,9 @@ private:
     int m_width = 0;
     int m_height = 0;
 
-    const float m_lineWidth = 6.0f;
     const int m_steps = 8;
+    
+    // 可配置的轨迹样式
+    D2D1_COLOR_F m_trailColor = D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
+    float m_lineWidth = 6.0f;
 };

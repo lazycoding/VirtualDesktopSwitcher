@@ -1,11 +1,49 @@
 ﻿#include "MouseTrailRenderer.h"
 #include <algorithm>
+#include <cwchar>
 
 MouseTrailRenderer::MouseTrailRenderer() {}
 MouseTrailRenderer::~MouseTrailRenderer() {
     DestroyDIBAndRenderTarget();
     if (m_factory)
         m_factory->Release();
+}
+
+D2D1_COLOR_F MouseTrailRenderer::HexToColorF(const std::wstring& hex) {
+    if (hex.length() != 9 || hex[0] != L'#') {
+        // Return default color if invalid format
+        return D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
+    }
+
+    // Parse RR, GG, BB, AA components
+    wchar_t* end;
+    std::wstring r = hex.substr(1, 2);
+    std::wstring g = hex.substr(3, 2);
+    std::wstring b = hex.substr(5, 2);
+    std::wstring a = hex.substr(7, 2);
+
+    long rValue = std::wcstol(r.c_str(), &end, 16);
+    long gValue = std::wcstol(g.c_str(), &end, 16);
+    long bValue = std::wcstol(b.c_str(), &end, 16);
+    long aValue = std::wcstol(a.c_str(), &end, 16);
+
+    // Convert to 0.0-1.0 range
+    return D2D1::ColorF(
+        static_cast<float>(rValue) / 255.0f,
+        static_cast<float>(gValue) / 255.0f,
+        static_cast<float>(bValue) / 255.0f,
+        static_cast<float>(aValue) / 255.0f
+    );
+}
+
+void MouseTrailRenderer::SetTrailStyle(const std::wstring& colorHex, float lineWidth) {
+    m_trailColor = HexToColorF(colorHex);
+    m_lineWidth = lineWidth;
+
+    // Update the brush color if it exists
+    if (m_brush) {
+        m_brush->SetColor(m_trailColor);
+    }
 }
 
 BOOL CALLBACK MouseTrailRenderer::MonitorEnumProc(HMONITOR, HDC, LPRECT lprc,
@@ -79,8 +117,7 @@ void MouseTrailRenderer::CreateDIBAndRenderTarget() {
         96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
 
     if (SUCCEEDED(m_factory->CreateDCRenderTarget(&props, &m_rt))) {
-        m_rt->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::SkyBlue, 1.0f),
-            &m_brush);
+        m_rt->CreateSolidColorBrush(m_trailColor, &m_brush);
         D2D1_STROKE_STYLE_PROPERTIES strokeProps = D2D1::StrokeStyleProperties(
             D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND,
             D2D1_LINE_JOIN_ROUND, 1.0f);
@@ -162,7 +199,7 @@ void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
             sink->Close();
             sink->Release();
 
-            m_brush->SetColor(D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f));
+            m_brush->SetColor(m_trailColor);
             m_rt->DrawGeometry(geo, m_brush, m_lineWidth, m_stroke);
         }
         geo->Release();

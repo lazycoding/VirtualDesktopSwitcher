@@ -17,13 +17,16 @@ namespace VirtualDesktop {
         }
 
         bool initialize() {
+            if (!m_settings.load(L"config.json")) {
+                return false;
+            }
+
             if (!m_overlay.initialize(m_hInstance)) {
                 return false;
             }
 
-            if (!m_settings.load(L"config.json")) {
-                return false;
-            }
+            // Apply settings to overlay
+            m_overlay.setSettings(m_settings);
 
             if (!m_trayIcon.initialize()) {
                 return false;

@@ -6,7 +6,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace VirtualDesktop {
 
-    OverlayUI::OverlayUI() = default;
+    OverlayUI::OverlayUI() : m_settings(nullptr) {}
 
     OverlayUI::~OverlayUI() {}
 
@@ -34,8 +34,28 @@ namespace VirtualDesktop {
             0, 0, CW_DEFAULT, CW_DEFAULT,
             NULL, NULL, hInst, this);
 
+        // Apply settings to the mouse trail renderer if settings are available
+        if (m_settings) {
+            std::wstring colorHex = m_settings->getOverlayColor();
+            int sensitivity = m_settings->getGestureSensitivity();
+            // Convert sensitivity to line width (1-10 sensitivity to 1-10 line width)
+            float lineWidth = static_cast<float>(sensitivity * 2); // Scale as needed
+            m_mouseTrailRenderer.SetTrailStyle(colorHex, lineWidth);
+        }
+
         m_mouseTrailRenderer.Initialize(m_hWnd);
         return true;
+    }
+
+    void OverlayUI::setSettings(const Settings& settings) {
+        m_settings = &settings;
+        
+        // Apply settings to the mouse trail renderer
+        std::wstring colorHex = m_settings->getOverlayColor();
+        int sensitivity = m_settings->getGestureSensitivity();
+        // Convert sensitivity to line width (1-10 sensitivity to 1-10 line width)
+        float lineWidth = static_cast<float>(sensitivity * 2); // Scale as needed
+        m_mouseTrailRenderer.SetTrailStyle(colorHex, lineWidth);
     }
 
     void OverlayUI::clear() { m_mouseTrailRenderer.Clear(); }

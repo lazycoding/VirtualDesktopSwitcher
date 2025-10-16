@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "MouseTrailRenderer.h"
+#include "Settings/Settings.h"
 #include <Windows.h>
 #include <vector>
 
@@ -46,6 +47,13 @@ namespace VirtualDesktop {
          * @brief Clears the overlay
          */
         void clear();
+
+        /**
+         * @brief Sets the settings for the overlay
+         * @param settings The settings object
+         */
+        void setSettings(const Settings& settings);
+
     private:
         static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
             LPARAM lParam);
@@ -54,6 +62,7 @@ namespace VirtualDesktop {
         MouseTrailRenderer m_mouseTrailRenderer;
         std::vector<POINT> m_trajectoryPoints;
         HWND m_hWnd;
+        const Settings* m_settings;  // Pointer to settings instead of copy
     };
 
 } // namespace VirtualDesktop
