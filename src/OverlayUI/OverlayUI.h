@@ -1,43 +1,59 @@
-#pragma once
+﻿#pragma once
+#include "MouseTrailRenderer.h"
 #include <Windows.h>
-#include <d2d1.h>
 #include <vector>
 
 namespace VirtualDesktop {
 
-/**
- * @brief Renders overlay UI for gesture visualization
- */
-class OverlayUI {
-public:
-  OverlayUI();
-  ~OverlayUI();
+    /**
+     * @brief Renders overlay UI for gesture visualization
+     */
+    class OverlayUI {
+    public:
+        OverlayUI();
+        ~OverlayUI();
 
-  /**
-   * @brief Initializes Direct2D resources
-   * @param hwnd Parent window handle
-   * @return true if initialization succeeded
-   */
-  bool initialize(HWND hwnd);
+        /**
+         * @brief Initializes Direct2D resources
+         * @return true if initialization succeeded
+         */
+        bool initialize(HINSTANCE hInst);
 
-  /**
-   * @brief Renders the gesture path
-   * @param points Vector of mouse positions
-   */
-  void render(const std::vector<POINT> &points);
+        /**
+         * @brief Shows the overlay window
+         */
+        void show();
 
-  /**
-   * @brief Clears the overlay
-   */
-  void clear();
+        /**
+         * @brief Hides the overlay window and clears the trajectory points
+         */
+        void hide();
 
-private:
-  HWND m_hwnd = nullptr;
-  ID2D1Factory *m_d2dFactory = nullptr;
-  ID2D1HwndRenderTarget *m_renderTarget = nullptr;
-  ID2D1SolidColorBrush *m_brush = nullptr;
+        /**
+         * @brief Updates the mouse position and renders the gesture trajectory
+         * @param x The x coordinate of the mouse position
+         * @param y The y coordinate of the mouse position
+         */
+        void updatePosition(int x, int y);
 
-  void releaseResources();
-};
+        /**
+         * @brief Renders the gesture path
+         * @param points Vector of mouse positions
+         */
+        void render(const std::vector<POINT>& points);
+
+        /**
+         * @brief Clears the overlay
+         */
+        void clear();
+    private:
+        static LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam,
+            LPARAM lParam);
+
+    private:
+        MouseTrailRenderer m_mouseTrailRenderer;
+        std::vector<POINT> m_trajectoryPoints;
+        HWND m_hWnd;
+    };
 
 } // namespace VirtualDesktop

@@ -17,6 +17,9 @@ namespace VirtualDesktop {
         }
 
         bool initialize() {
+            if (!m_overlay.initialize(m_hInstance)) {
+                return false;
+            }
 
             if (!m_settings.load(L"config.json")) {
                 return false;
@@ -43,8 +46,8 @@ namespace VirtualDesktop {
                     // 开始分析手势
                     m_gestureAnalyzer.clearPositions();
                     m_gestureAnalyzer.addPosition(mouseData->pt.x, mouseData->pt.y);
-                    // m_overlay.show();
-                    // m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
+                    m_overlay.show();
+                    m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
                 }
                 else if (wParam == WM_XBUTTONUP) {
                     auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
@@ -56,23 +59,23 @@ namespace VirtualDesktop {
                     auto direction = m_gestureAnalyzer.analyzeGesture();
                     if (direction == GestureAnalyzer::Direction::Left) {
                         m_desktopManager.switchDesktop(false);
-                        m_trayIcon.showNotification(L"Switched Desktop",
-                            L"Moved to previous virtual desktop.");
+                        //m_trayIcon.showNotification(L"Switched Desktop",
+                        //                            L"Moved to previous virtual desktop.");
                     }
                     else if (direction == GestureAnalyzer::Direction::Right) {
                         m_desktopManager.switchDesktop(true);
-                        m_trayIcon.showNotification(L"Switched Desktop",
-                            L"Moved to next virtual desktop.");
+                        //m_trayIcon.showNotification(L"Switched Desktop",
+                        //                            L"Moved to next virtual desktop.");
                     }
                     m_gestureAnalyzer.clearPositions();
-                    // m_overlay.hide();
+                    m_overlay.hide();
                 }
                 else if (wParam == WM_MOUSEMOVE) {
                     // 记录鼠标移动位置仅当侧键按下时
                     auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
                     if (m_gestureAnalyzer.isGestureInProgress()) {
                         m_gestureAnalyzer.addPosition(mouseData->pt.x, mouseData->pt.y);
-                        // m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
+                        m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
                     }
                 }
                 });

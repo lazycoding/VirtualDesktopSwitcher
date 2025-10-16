@@ -1,85 +1,110 @@
-#include "OverlayUI.h"
+﻿#include "OverlayUI.h"
 #include <d2d1_1.h>
 #include <wrl/client.h>
-
 
 using Microsoft::WRL::ComPtr;
 
 namespace VirtualDesktop {
 
-OverlayUI::OverlayUI() = default;
+    OverlayUI::OverlayUI() = default;
 
-OverlayUI::~OverlayUI() { releaseResources(); }
+    OverlayUI::~OverlayUI() {}
 
-bool OverlayUI::initialize(HWND hwnd) {
-  m_hwnd = hwnd;
+    /**
+     * @brief Initializes the overlay window with transparent background and
+     * fullscreen size
+     * @return true if initialization succeeded, false otherwise
+     */
+    bool OverlayUI::initialize(HINSTANCE hInst) {
+        // Register window class
+        const wchar_t className[] = L"VirtualDesktopOverlayClass";
+        WNDCLASS windowClass = {};
+        windowClass.lpfnWndProc = DefWindowProc;
+        windowClass.hInstance = GetModuleHandle(nullptr);
+        windowClass.lpszClassName = className;
+        windowClass.lpfnWndProc = WinProc;
+        if (!RegisterClass(&windowClass)) {
+            return false;
+        }
 
-  HRESULT hr =
-      D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_d2dFactory);
+        // Create window with transparent properties
+        DWORD ex = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST |
+            WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+        m_hWnd = CreateWindowExW(ex, className, L"", WS_POPUP,
+            0, 0, CW_DEFAULT, CW_DEFAULT,
+            NULL, NULL, hInst, this);
 
-  if (FAILED(hr)) {
-    return false;
-  }
+        m_mouseTrailRenderer.Initialize(m_hWnd);
+        return true;
+    }
 
-  RECT rc;
-  GetClientRect(m_hwnd, &rc);
+    void OverlayUI::clear() { m_mouseTrailRenderer.Clear(); }
 
-  hr = m_d2dFactory->CreateHwndRenderTarget(
-      D2D1::RenderTargetProperties(),
-      D2D1::HwndRenderTargetProperties(
-          m_hwnd, D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top)),
-      &m_renderTarget);
+    LRESULT OverlayUI::WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+    {
+        if (message == WM_CREATE) {
+            // Store the OverlayUI instance in window user data
+            CREATESTRUCT* pcs = (CREATESTRUCT*)lParam;
+            OverlayUI* pOverlay = (OverlayUI*)pcs->lpCreateParams;
+            SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pOverlay);
+            return 0;
+        }
+        else {
+            // Load the OverlayUI instance from window user data
+            OverlayUI* pOverlay = (OverlayUI*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            switch (message)
+            {
+            case WM_DISPLAYCHANGE:
+            case WM_SETTINGCHANGE:
+            {
+                if (pOverlay)
+                {
+                    pOverlay->m_mouseTrailRenderer.ResizeForMonitors();
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
 
-  if (FAILED(hr)) {
-    return false;
-  }
+    void OverlayUI::show() {
+        if (m_hWnd != nullptr) {
+            ShowWindow(m_hWnd, SW_SHOW);
+            UpdateWindow(m_hWnd);
+        }
+    }
 
-  hr = m_renderTarget->CreateSolidColorBrush(
-      D2D1::ColorF(D2D1::ColorF::LightBlue, 0.7f), &m_brush);
+    void OverlayUI::hide() {
+        if (m_hWnd != nullptr) {
+            ShowWindow(m_hWnd, SW_HIDE);
+            // Clear trajectory points when hiding
+            m_trajectoryPoints.clear();
+            // Clear the overlay display
+            clear();
+        }
+    }
 
-  return SUCCEEDED(hr);
-}
+    void OverlayUI::updatePosition(int x, int y) {
+        if (m_hWnd == nullptr) {
+            return;
+        }
 
-void OverlayUI::render(const std::vector<POINT> &points) {
-  if (!m_renderTarget || points.size() < 2) {
-    return;
-  }
+        // Add new point to trajectory
+        POINT newPoint = { x, y };
+        m_trajectoryPoints.push_back(newPoint);
 
-  m_renderTarget->BeginDraw();
-  m_renderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
+        // Render the updated trajectory
+        render(m_trajectoryPoints);
+    }
 
-  for (size_t i = 1; i < points.size(); ++i) {
-    m_renderTarget->DrawLine(D2D1::Point2F(static_cast<float>(points[i - 1].x),
-                                           static_cast<float>(points[i - 1].y)),
-                             D2D1::Point2F(static_cast<float>(points[i].x),
-                                           static_cast<float>(points[i].y)),
-                             m_brush, 3.0f);
-  }
-
-  m_renderTarget->EndDraw();
-}
-
-void OverlayUI::clear() {
-  if (m_renderTarget) {
-    m_renderTarget->BeginDraw();
-    m_renderTarget->Clear(D2D1::ColorF(0, 0, 0, 0));
-    m_renderTarget->EndDraw();
-  }
-}
-
-void OverlayUI::releaseResources() {
-  if (m_brush) {
-    m_brush->Release();
-    m_brush = nullptr;
-  }
-  if (m_renderTarget) {
-    m_renderTarget->Release();
-    m_renderTarget = nullptr;
-  }
-  if (m_d2dFactory) {
-    m_d2dFactory->Release();
-    m_d2dFactory = nullptr;
-  }
-}
+    void OverlayUI::render(const std::vector<POINT>& points) {
+        if (m_hWnd == nullptr) {
+            return;
+        }
+        m_mouseTrailRenderer.Render(points);
+    }
 
 } // namespace VirtualDesktop
