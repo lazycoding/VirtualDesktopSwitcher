@@ -42,6 +42,22 @@ file(GLOB_RECURSE RESOURCES
 # Main executable (WIN32 hides console)
 add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
 
+# Group files in Visual Studio solution to match directory structure
+# source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${SOURCES})
+# source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${HEADERS})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${RESOURCES})
+
+# Also group by folder structure
+foreach(source_file ${SOURCES} ${HEADERS} ${RESOURCES})
+    get_filename_component(source_path "${source_file}" PATH)
+    file(RELATIVE_PATH source_path_rel "${CMAKE_CURRENT_SOURCE_DIR}/src" "${source_path}")
+    if ("${source_path_rel}" STREQUAL "")
+        set(source_path_rel "root")
+    endif()
+    string(REPLACE "/" "\\" source_path_msvc "${source_path_rel}")
+    source_group("${source_path_msvc}" FILES "${source_file}")
+endforeach()
+
 target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
 
 # Windows specific libraries
