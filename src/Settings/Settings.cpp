@@ -1,8 +1,9 @@
 #include "Settings.h"
+
 #include <Windows.h>
+
 #include <fstream>
 #include <string>
-
 
 namespace VirtualDesktop {
 
@@ -14,14 +15,14 @@ constexpr const char *DEFAULT_CONFIG = R"({
 
 // unicode to utf8
 std::string utf8_encode(const std::wstring &wide_str) {
-  int size_needed = WideCharToMultiByte(
-      CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), NULL, 0, NULL, NULL);
+  int size_needed =
+      WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), NULL, 0, NULL, NULL);
   std::string strTo(size_needed, 0);
-  WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), &strTo[0],
-                      size_needed, NULL, NULL);
+  WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), &strTo[0], size_needed, NULL,
+                      NULL);
   return strTo;
 }
-} // namespace
+}  // namespace
 bool Settings::load(const std::wstring &filePath) {
   try {
     std::ifstream file(filePath.c_str());
@@ -49,9 +50,7 @@ bool Settings::save(const std::wstring &filePath) const {
   }
 }
 
-int Settings::getGestureSensitivity() const {
-  return m_config.value("gesture_sensitivity", 5);
-}
+int Settings::getGestureSensitivity() const { return m_config.value("gesture_sensitivity", 5); }
 
 void Settings::setGestureSensitivity(int value) {
   m_config["gesture_sensitivity"] = std::clamp(value, 1, 10);
@@ -68,4 +67,10 @@ void Settings::setOverlayColor(const std::wstring &color) {
   }
 }
 
-} // namespace VirtualDesktop
+int Settings::getGestureLineWidth() const { return m_config.value("gesture_line_width", 3); }
+
+void Settings::setGestureLineWidth(int width) {
+  m_config["gesture_line_width"] = std::clamp(width, 1, 10);
+}
+
+}  // namespace VirtualDesktop
