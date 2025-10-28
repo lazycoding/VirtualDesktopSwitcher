@@ -137,19 +137,12 @@ void MouseTrailRenderer::CreateDIBAndRenderTarget() {
     ReleaseDC(NULL, hdcScreen);
 
     // 获取当前DPI，用于渲染目标
-    UINT dpiX = 96, dpiY = 96;
-    HMONITOR hMonitor = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
-    if (hMonitor) {
-        GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
-    }
-
-    Trace("dpi: %d x %d", dpiX, dpiY);
-
+    const float dpiX = 96.0f, dpiY = 96.0f;
     D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_DEFAULT,
             D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            static_cast<float>(dpiX),
-            static_cast<float>(dpiY),
+            dpiX,
+            dpiY,
             D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
 
     if (SUCCEEDED(m_factory->CreateDCRenderTarget(&props, &m_renderTarget))) {
@@ -204,24 +197,12 @@ void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
     if (!m_renderTarget || pts.size() < 2)
         return;
 
-    // Get current DPI for scaling
-    UINT dpiX = 96, dpiY = 96;
-    HMONITOR hMonitor = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
-    if (hMonitor) {
-        GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
-    }
-
     // Convert screen coordinates to window-relative physical pixel coordinates
     std::vector<FPoint> fpts;
     fpts.reserve(pts.size());
 
     for (auto& p : pts) {
-        // MSLLHOOKSTRUCT provides physical pixel coordinates in DPI-aware applications
-        // First apply DPI scaling, then convert to window-relative coordinates
-        float scaleX = static_cast<float>(dpiX) / 96.0f;
-        float scaleY = static_cast<float>(dpiY) / 96.0f;
-
-        fpts.push_back({(float)(p.x / scaleX - m_rcVirtual.left), (float)(p.y / scaleY - m_rcVirtual.top)});
+        fpts.push_back({(float)(p.x - m_rcVirtual.left), (float)(p.y - m_rcVirtual.top)});
     }
 
     RECT bind = {0, 0, m_width, m_height};
