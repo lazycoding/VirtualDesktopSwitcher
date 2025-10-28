@@ -5,12 +5,12 @@ project(VirtualDesktopSwitcher LANGUAGES CXX RC)
 include(FetchContent)
 
 # Download and install spdlog
-FetchContent_Declare(
-    spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.13.0
-)
-FetchContent_MakeAvailable(spdlog)
+# FetchContent_Declare(
+#     spdlog
+#     GIT_REPOSITORY https://github.com/gabime/spdlog.git
+#     GIT_TAG v1.13.0
+# )
+# FetchContent_MakeAvailable(spdlog)
 
 # Set C++ standard and compiler options
 set(CMAKE_CXX_STANDARD 17)
@@ -21,7 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(MSVC)
     add_compile_options(/W4 /WX /wd4267)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-deprecated-literal-operator)
 endif()
 
 # Include directories
@@ -58,7 +58,11 @@ foreach(source_file ${SOURCES} ${HEADERS} ${RESOURCES})
     source_group("${source_path_msvc}" FILES "${source_file}")
 endforeach()
 
-target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
+# forbidden warning
+# -Werror,-Wdeprecated-literal-operator
+
+
+# target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
 
 # Windows specific libraries
 if(WIN32)

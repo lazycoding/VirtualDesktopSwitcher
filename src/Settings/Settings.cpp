@@ -1,14 +1,17 @@
 ﻿#include "Settings.h"
-
 #include <Windows.h>
-
 #include <fstream>
 #include <string>
 
 namespace VirtualDesktop {
 
 namespace {
-constexpr const char* DEFAULT_CONFIG = R"({"gesture_line_width": 5,"overlay_color": "#6495EDAA"})";
+constexpr const char* DEFAULT_CONFIG = R"(
+    {
+        "gesture_line_width": 5,
+        "overlay_color": "#6495EDAA"
+    }
+)";
 
 // unicode to utf8
 std::string utf8_encode(const std::wstring& wide_str) {
@@ -25,6 +28,7 @@ std::wstring utf8_decode(const std::string& utf8_str) {
     return strTo;
 }
 }  // namespace
+
 bool Settings::load(const std::wstring& filePath) {
     try {
         std::ifstream file(filePath.c_str());
@@ -54,7 +58,7 @@ bool Settings::save(const std::wstring& filePath) const {
 
 std::wstring Settings::getOverlayColor() const {
     std::string color = m_config.value("overlay_color", "#6495EDAA");
-    return std::wstring(color.begin(), color.end());
+    return utf8_decode(color);
 }
 
 void Settings::setOverlayColor(const std::wstring& color) {

@@ -1,10 +1,7 @@
 ﻿#pragma once
 
-#include <spdlog/spdlog.h>
-
 #include "DesktopManager/DesktopManager.h"
 #include "GestureAnalyzer/GestureAnalyzer.h"
-#include "MouseHook/MouseHook.h"
 #include "OverlayUI/OverlayUI.h"
 #include "Settings/Settings.h"
 #include "TrayIcon/TrayIcon.h"

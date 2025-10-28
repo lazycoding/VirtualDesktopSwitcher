@@ -69,14 +69,14 @@ The application uses `config.json` for settings. Default location: `%APPDATA%\Vi
 ### Available Settings
 ```json
 {
-  "gestureSensitivity": 5,
-  "overlayColor": "#FF0000FF"
+  "gesture_line_width": 5,
+  "overlay_color": "#FF0000FF"
 }
 ```
 
 ### Configuration Details
-- **gestureSensitivity**: Controls the sensitivity of gesture detection (1-10). Higher values make it easier to detect gestures.
-- **overlayColor**: Sets the color of the gesture trail visualization in #RRGGBBAA format (Red, Green, Blue, Alpha). 
+- **gesture_line_width**: Controls the thickness of the gesture trail visualization
+- **overlay_color**: Sets the color of the gesture trail visualization in #RRGGBBAA format (Red, Green, Blue, Alpha). 
   - The MouseTrailRenderer uses this color for the gesture trajectory visualization.
   - The alpha channel controls the transparency (00 = fully transparent, FF = fully opaque).
   - The line width of the gesture trail is also dynamically adjusted based on the sensitivity setting.

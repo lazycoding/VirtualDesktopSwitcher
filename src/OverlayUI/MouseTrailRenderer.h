@@ -40,8 +40,7 @@ private:
     // 内部辅助
     static BOOL CALLBACK MonitorEnumProc(HMONITOR, HDC, LPRECT, LPARAM);
     void ComputeVirtualScreenRect();
-    FPoint CatmullRom(const FPoint& p0, const FPoint& p1, const FPoint& p2,
-        const FPoint& p3, float t);
+    FPoint CatmullRom(const FPoint& p0, const FPoint& p1, const FPoint& p2, const FPoint& p3, float t);
 
     // 辅助函数：将十六进制颜色字符串转换为D2D1_COLOR_F
     D2D1_COLOR_F HexToColorF(const std::wstring& hex);
@@ -57,12 +56,12 @@ private:
     HBITMAP m_hDIB = nullptr;
     void* m_pBits = nullptr;
 
-    RECT m_rcVirtual = { 0 };
+    RECT m_rcVirtual;
     int m_width = 0;
     int m_height = 0;
 
     const int m_steps = 8;
-    
+
     // 可配置的轨迹样式
     D2D1_COLOR_F m_trailColor = D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
     float m_lineWidth = 6.0f;

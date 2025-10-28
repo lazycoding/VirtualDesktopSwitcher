@@ -13,6 +13,7 @@ lib/
 # IDE specific files
 .vscode/
 .idea/
+.cache/
 *.suo
 *.user
 *.sln
@@ -66,3 +67,5 @@ coverage/
 *.gcno
 *.gcda
 .vs
+
+out/
