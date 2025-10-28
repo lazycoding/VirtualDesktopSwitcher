@@ -23,6 +23,8 @@ WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR l
     UNREFERENCED_PARAMETER(nCmdShow);
 
     RedirectStdoutToConsole();
+    SetConsoleOutputCP(CP_UTF8);
+
     std::cout << "Virtual Desktop Switcher starting..." << std::endl;
 
     VirtualDesktop::Application app(hInstance);
@@ -31,7 +33,7 @@ WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR l
         return -1;
     }
 
-    std::cout << "Application initialized successfully" << std::endl;
+    std::cout << "Application initialized successfully, running..." << std::endl;
     app.run();
     std::cout << "Application shutting down" << std::endl;
     return 0;

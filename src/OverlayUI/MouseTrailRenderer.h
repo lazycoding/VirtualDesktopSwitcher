@@ -1,12 +1,13 @@
 ﻿// MouseTrailRenderer.h
 #pragma once
-#include <chrono>
 #include <d2d1.h>
 #include <vector>
 #include <windows.h>
 #include <string>
 
 #pragma comment(lib, "d2d1.lib")
+
+namespace VirtualDesktop {
 
 class MouseTrailRenderer {
 public:
@@ -48,7 +49,7 @@ private:
 private:
     HWND m_hwnd = nullptr;
     ID2D1Factory* m_factory = nullptr;
-    ID2D1DCRenderTarget* m_rt = nullptr;
+    ID2D1DCRenderTarget* m_renderTarget = nullptr;
     ID2D1SolidColorBrush* m_brush = nullptr;
     ID2D1StrokeStyle* m_stroke = nullptr;
 
@@ -66,3 +67,5 @@ private:
     D2D1_COLOR_F m_trailColor = D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
     float m_lineWidth = 6.0f;
 };
+
+}  // namespace VirtualDesktop

@@ -1,6 +1,8 @@
 ﻿#include "app.h"
-#include <Windows.h>
 #include "MouseHook/MouseHook.h"
+
+#include <Windows.h>
+#include <ShellScalingApi.h>
 
 namespace VirtualDesktop {
 
@@ -9,6 +11,9 @@ Application::Application(HINSTANCE hInstance) :
 }
 
 bool Application::initialize() {
+    // 使用更兼容的方式设置DPI感知
+    SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+
     if (!m_settings.load(L"config.json")) {
         return false;
     }
@@ -62,12 +67,8 @@ bool Application::initialize() {
             auto direction = m_gestureAnalyzer.analyzeGesture();
             if (direction == GestureAnalyzer::Direction::Left) {
                 m_desktopManager.switchDesktop(false);
-                // m_trayIcon.showNotification(L"Switched Desktop",
-                //                             L"Moved to previous virtual desktop.");
             } else if (direction == GestureAnalyzer::Direction::Right) {
                 m_desktopManager.switchDesktop(true);
-                // m_trayIcon.showNotification(L"Switched Desktop",
-                //                             L"Moved to next virtual desktop.");
             }
             m_gestureAnalyzer.clearPositions();
             m_overlay.hide();

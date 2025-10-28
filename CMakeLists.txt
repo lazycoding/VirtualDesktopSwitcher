@@ -58,17 +58,14 @@ foreach(source_file ${SOURCES} ${HEADERS} ${RESOURCES})
     source_group("${source_path_msvc}" FILES "${source_file}")
 endforeach()
 
-# forbidden warning
-# -Werror,-Wdeprecated-literal-operator
-
-
-# target_link_libraries(VirtualDesktopSwitcher PRIVATE spdlog::spdlog)
+target_include_directories(VirtualDesktopSwitcher PRIVATE 
+${CMAKE_CURRENT_SOURCE_DIR})
 
 # Windows specific libraries
 if(WIN32)
     # Target Windows 10 (0x0A00) or later
     target_link_libraries(VirtualDesktopSwitcher PRIVATE 
-        user32 gdi32 d2d1 shell32)
+        user32 gdi32 d2d1 shell32 Shcore)
     target_compile_definitions(VirtualDesktopSwitcher PRIVATE 
         WIN32_LEAN_AND_MEAN 
         NOMINMAX 
