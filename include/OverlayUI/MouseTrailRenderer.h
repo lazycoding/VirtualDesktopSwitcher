@@ -3,6 +3,7 @@
 #include <d2d1_1.h>
 #include <string>
 #include <vector>
+#include <array>
 
 namespace VirtualDesktop {
 
@@ -55,7 +56,10 @@ private:
     void computeVirtualScreenRect();
     void createDIBAndRenderTarget();
     void destroyDIBAndRenderTarget();
-    static FPoint catmullRom(const FPoint& p0, const FPoint& p1, const FPoint& p2, const FPoint& p3, float t);
+    static FPoint quadraticBezier(const FPoint& p0, const FPoint& p1, const FPoint& p2, float t);
+    static void precomputeBezierTable();
+    static constexpr int BEZIER_TABLE_SIZE = 64;
+    static inline std::array<float, BEZIER_TABLE_SIZE> s_bezierTable = {};
 
     ID2D1Factory* m_factory = nullptr;
     ID2D1DCRenderTarget* m_renderTarget = nullptr;
@@ -71,7 +75,6 @@ private:
     D2D1_COLOR_F m_trailColor = D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
     float m_lineWidth = 3.0f;
     static constexpr int STEPS = 10;
-    int m_steps = STEPS;
 
     // Disable copy and move
     MouseTrailRenderer(const MouseTrailRenderer&) = delete;

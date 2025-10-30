@@ -154,20 +154,25 @@ void MouseTrailRenderer::destroyDIBAndRenderTarget() {
     }
 }
 
-MouseTrailRenderer::FPoint MouseTrailRenderer::catmullRom(
+void MouseTrailRenderer::precomputeBezierTable() {
+    for (int i = 0; i < BEZIER_TABLE_SIZE; ++i) {
+        float t = static_cast<float>(i) / (BEZIER_TABLE_SIZE - 1);
+        s_bezierTable[i] = t * t;  // Precompute t^2 for quadratic bezier
+    }
+}
+
+MouseTrailRenderer::FPoint MouseTrailRenderer::quadraticBezier(
         const FPoint& p0,
         const FPoint& p1,
         const FPoint& p2,
-        const FPoint& p3,
         float t) {
-    float t2 = t * t;
-    float t3 = t2 * t;
-    return {0.5f *
-                    ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
-                     (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
-            0.5f *
-                    ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
-                     (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)};
+    // Quadratic Bezier formula: B(t) = (1-t)^2 * P0 + 2*(1-t)*t * P1 + t^2 * P2
+    float oneMinusT = 1.0f - t;
+    float oneMinusTSquared = oneMinusT * oneMinusT;
+    float tSquared = t * t;
+
+    return {oneMinusTSquared * p0.x + 2 * oneMinusT * t * p1.x + tSquared * p2.x,
+            oneMinusTSquared * p0.y + 2 * oneMinusT * t * p1.y + tSquared * p2.y};
 }
 
 void MouseTrailRenderer::render(const std::vector<POINT>& points) {
@@ -191,22 +196,51 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
     m_renderTarget->BeginDraw();
     m_renderTarget->Clear(D2D1::ColorF(0, 0.0f));
 
+    // Initialize bezier table on first use
+    static bool bezierTableInitialized = false;
+    if (!bezierTableInitialized) {
+        precomputeBezierTable();
+        bezierTableInitialized = true;
+    }
+
+    // Create geometry for rendering
     ID2D1PathGeometry* geo = nullptr;
-    if (points.size() >= 4) {
-        // Use Catmull-Rom spline for smooth rendering (requires at least 4 points)
+    if (points.size() >= 3) {
+        // Use quadratic Bezier curves for smooth rendering (requires at least 3 points)
         if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
             ID2D1GeometrySink* sink = nullptr;
             if (SUCCEEDED(geo->Open(&sink))) {
-                D2D1_POINT_2F start = D2D1::Point2F(fpts[1].x, fpts[1].y);
-                sink->BeginFigure(start, D2D1_FIGURE_BEGIN_HOLLOW);
+                // Start from first point
+                sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
 
-                for (size_t i = 1; i + 2 < fpts.size(); ++i) {
-                    for (int s = 1; s <= m_steps; ++s) {
-                        float t = (float)s / (float)m_steps;
-                        auto q = catmullRom(fpts[i - 1], fpts[i], fpts[i + 1], fpts[i + 2], t);
-                        sink->AddLine(D2D1::Point2F(q.x, q.y));
+                // Use quadratic Bezier curves between points
+                for (size_t i = 0; i + 2 < fpts.size(); i += 1) {
+                    const FPoint& p0 = fpts[i];
+                    const FPoint& p1 = fpts[i + 1];
+                    const FPoint& p2 = fpts[i + 2];
+
+                    // Control point is the midpoint between p0 and p1
+                    FPoint controlPoint = {(p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f};
+
+                    // Add quadratic Bezier curve from p0 to p1 with control point
+                    if (i == 0) {
+                        sink->AddLine(D2D1::Point2F(p0.x, p0.y));
+                    }
+                    sink->AddQuadraticBezier(
+                            D2D1::QuadraticBezierSegment(
+                                    D2D1::Point2F(controlPoint.x, controlPoint.y), D2D1::Point2F(p1.x, p1.y)));
+
+                    // For the last segment, add final curve to p2
+                    if (i + 3 >= fpts.size()) {
+                        FPoint finalControlPoint = {(p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f};
+                        sink->AddQuadraticBezier(
+                                D2D1::QuadraticBezierSegment(
+                                        D2D1::Point2F(finalControlPoint.x, finalControlPoint.y),
+                                        D2D1::Point2F(p2.x, p2.y)));
+                        break;
                     }
                 }
+
                 sink->EndFigure(D2D1_FIGURE_END_OPEN);
                 sink->Close();
                 sink->Release();
@@ -216,25 +250,24 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
             }
             geo->Release();
         }
-    } else if (points.size() >= 2) {
-        // For 2-3 points, use simple line connections
-        if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
+    }
+
+    // Handle simple line connections for 2 points
+    if (points.size() == 2) {
+        ID2D1PathGeometry* lineGeo = nullptr;
+        if (SUCCEEDED(m_factory->CreatePathGeometry(&lineGeo))) {
             ID2D1GeometrySink* sink = nullptr;
-            if (SUCCEEDED(geo->Open(&sink))) {
+            if (SUCCEEDED(lineGeo->Open(&sink))) {
                 sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
-
-                for (size_t i = 1; i < fpts.size(); ++i) {
-                    sink->AddLine(D2D1::Point2F(fpts[i].x, fpts[i].y));
-                }
-
+                sink->AddLine(D2D1::Point2F(fpts[1].x, fpts[1].y));
                 sink->EndFigure(D2D1_FIGURE_END_OPEN);
                 sink->Close();
                 sink->Release();
 
                 m_brush->SetColor(m_trailColor);
-                m_renderTarget->DrawGeometry(geo, m_brush, m_lineWidth, m_stroke);
+                m_renderTarget->DrawGeometry(lineGeo, m_brush, m_lineWidth, m_stroke);
             }
-            geo->Release();
+            lineGeo->Release();
         }
     }
 

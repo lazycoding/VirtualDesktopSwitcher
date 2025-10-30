@@ -14,8 +14,7 @@ void GestureAnalyzer::addPosition(int32_t x, int32_t y) {
 
 GestureAnalyzer::Direction GestureAnalyzer::analyzeGesture() const {
     // Simplified: only determine horizontal direction (Left / Right / None)
-    constexpr size_t MIN_POSITIONS = 3;
-    if (m_positions.size() < MIN_POSITIONS) {
+    if (m_positions.size() < GestureAnalyzer::MIN_POSITIONS) {
         return Direction::None;
     }
 
