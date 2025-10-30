@@ -1,7 +1,6 @@
-﻿#include "MouseTrailRenderer.h"
+﻿#include "OverlayUI/MouseTrailRenderer.h"
 #include "utils.h"
 #include <algorithm>
-#include <cwchar>
 
 #include <ShellScalingApi.h>
 #include <minwinbase.h>
@@ -11,13 +10,15 @@ namespace VirtualDesktop {
 
 MouseTrailRenderer::MouseTrailRenderer() {
 }
+
 MouseTrailRenderer::~MouseTrailRenderer() {
-    DestroyDIBAndRenderTarget();
-    if (m_factory)
+    destroyDIBAndRenderTarget();
+    if (m_factory) {
         m_factory->Release();
+    }
 }
 
-D2D1_COLOR_F MouseTrailRenderer::HexToColorF(const std::wstring& hex) {
+D2D1_COLOR_F MouseTrailRenderer::hexToColorF(const std::wstring& hex) {
     if (hex.length() != 9 || hex[0] != L'#') {
         // Return default color if invalid format
         return D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
@@ -42,18 +43,22 @@ D2D1_COLOR_F MouseTrailRenderer::HexToColorF(const std::wstring& hex) {
             static_cast<float>(bValue) / 255.0f,
             static_cast<float>(aValue) / 255.0f);
 }
-void MouseTrailRenderer::SetTrailStyle(const std::wstring& colorHex, float lineWidth) {
-    m_trailColor = HexToColorF(colorHex);
+
+void MouseTrailRenderer::setTrailStyle(const std::wstring& colorHex, float lineWidth) {
+    m_trailColor = hexToColorF(colorHex);
     m_lineWidth = std::clamp(lineWidth, 1.0f, 10.0f);
 }
 
-BOOL CALLBACK MouseTrailRenderer::MonitorEnumProc(HMONITOR, HDC, LPRECT lprc, LPARAM data) {
+BOOL CALLBACK MouseTrailRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LPRECT lprc, LPARAM data) {
+    UNREFERENCED_PARAMETER(hMonitor);
+    UNREFERENCED_PARAMETER(hdc);
+
     RECT* r = reinterpret_cast<RECT*>(data);
     UnionRect(r, r, lprc);
     return TRUE;
 }
 
-void MouseTrailRenderer::ComputeVirtualScreenRect() {
+void MouseTrailRenderer::computeVirtualScreenRect() {
     if (m_hwnd) {
         // Use the monitor where the window is located
         HMONITOR hMonitor = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
@@ -66,19 +71,19 @@ void MouseTrailRenderer::ComputeVirtualScreenRect() {
             m_rcVirtual = monitorInfo.rcWork;
             m_width = std::max((LONG)1, m_rcVirtual.right - m_rcVirtual.left);
             m_height = std::max((LONG)1, m_rcVirtual.bottom - m_rcVirtual.top);
-            Trace("monitor rect: [%d, %d, %d, %d]",
+            trace("monitor rect: [%d, %d, %d, %d]",
                   m_rcVirtual.left,
                   m_rcVirtual.top,
                   m_rcVirtual.right,
                   m_rcVirtual.bottom);
-            Trace("monitor size: %d x %d", m_width, m_height);
+            trace("monitor size: %d x %d", m_width, m_height);
             return;
         }
     }
 
     // Fallback to primary monitor
     RECT r = {0, 0, 0, 0};
-    EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)&r);
+    EnumDisplayMonitors(NULL, NULL, monitorEnumProc, (LPARAM)&r);
     if (IsRectEmpty(&r)) {
         r.left = 0;
         r.top = 0;
@@ -88,32 +93,33 @@ void MouseTrailRenderer::ComputeVirtualScreenRect() {
     m_rcVirtual = r;
     m_width = std::max((LONG)1, r.right - r.left);
     m_height = std::max((LONG)1, r.bottom - r.top);
-    Trace("fallback rect: [%d, %d, %d, %d]", r.left, r.top, r.right, r.bottom);
-    Trace("fallback size: %d x %d", m_width, m_height);
+    trace("fallback rect: [%d, %d, %d, %d]", r.left, r.top, r.right, r.bottom);
+    trace("fallback size: %d x %d", m_width, m_height);
 }
 
-bool MouseTrailRenderer::Initialize(HWND hwndParent) {
+bool MouseTrailRenderer::initialize(HWND hwndParent) {
     m_hwnd = hwndParent;
-    if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_factory)))
+    if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_factory))) {
         return false;
+    }
 
-    ComputeVirtualScreenRect();
+    computeVirtualScreenRect();
 
-    // 设置hwnd的size为m_rcVirtual
+    // Set window size to m_rcVirtual
     SetWindowPos(m_hwnd, NULL, m_rcVirtual.left, m_rcVirtual.top, m_width, m_height, SWP_NOACTIVATE | SWP_NOZORDER);
 
-    CreateDIBAndRenderTarget();
+    createDIBAndRenderTarget();
     return true;
 }
 
-void MouseTrailRenderer::ResizeForMonitors() {
-    DestroyDIBAndRenderTarget();
-    ComputeVirtualScreenRect();
-    CreateDIBAndRenderTarget();
+void MouseTrailRenderer::resizeForMonitors() {
+    destroyDIBAndRenderTarget();
+    computeVirtualScreenRect();
+    createDIBAndRenderTarget();
 }
 
-void MouseTrailRenderer::CreateDIBAndRenderTarget() {
-    DestroyDIBAndRenderTarget();
+void MouseTrailRenderer::createDIBAndRenderTarget() {
+    destroyDIBAndRenderTarget();
 
     BITMAPV5HEADER bi = {};
     bi.bV5Size = sizeof(BITMAPV5HEADER);
@@ -136,7 +142,7 @@ void MouseTrailRenderer::CreateDIBAndRenderTarget() {
     }
     ReleaseDC(NULL, hdcScreen);
 
-    // 获取当前DPI，用于渲染目标
+    // Get current DPI for render target
     const float dpiX = 96.0f, dpiY = 96.0f;
     D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -153,7 +159,7 @@ void MouseTrailRenderer::CreateDIBAndRenderTarget() {
     }
 }
 
-void MouseTrailRenderer::DestroyDIBAndRenderTarget() {
+void MouseTrailRenderer::destroyDIBAndRenderTarget() {
     if (m_brush) {
         m_brush->Release();
         m_brush = nullptr;
@@ -177,7 +183,7 @@ void MouseTrailRenderer::DestroyDIBAndRenderTarget() {
     }
 }
 
-MouseTrailRenderer::FPoint MouseTrailRenderer::CatmullRom(
+MouseTrailRenderer::FPoint MouseTrailRenderer::catmullRom(
         const FPoint& p0,
         const FPoint& p1,
         const FPoint& p2,
@@ -193,28 +199,30 @@ MouseTrailRenderer::FPoint MouseTrailRenderer::CatmullRom(
                      (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)};
 }
 
-void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
-    if (!m_renderTarget || pts.size() < 2)
+void MouseTrailRenderer::render(const std::vector<POINT>& points) {
+    if (!m_renderTarget || points.size() < 2) {
         return;
+    }
 
     // Convert screen coordinates to window-relative physical pixel coordinates
     std::vector<FPoint> fpts;
-    fpts.reserve(pts.size());
+    fpts.reserve(points.size());
 
-    for (auto& p : pts) {
+    for (auto& p : points) {
         fpts.push_back({(float)(p.x - m_rcVirtual.left), (float)(p.y - m_rcVirtual.top)});
     }
 
     RECT bind = {0, 0, m_width, m_height};
-    if (FAILED(m_renderTarget->BindDC(m_memDC, &bind)))
+    if (FAILED(m_renderTarget->BindDC(m_memDC, &bind))) {
         return;
+    }
 
     m_renderTarget->BeginDraw();
     m_renderTarget->Clear(D2D1::ColorF(0, 0.0f));
 
     ID2D1PathGeometry* geo = nullptr;
-    if (pts.size() >= 4) {
-        // 使用Catmull-Rom样条曲线平滑绘制（需要至少4个点）
+    if (points.size() >= 4) {
+        // Use Catmull-Rom spline for smooth rendering (requires at least 4 points)
         if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
             ID2D1GeometrySink* sink = nullptr;
             if (SUCCEEDED(geo->Open(&sink))) {
@@ -224,7 +232,7 @@ void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
                 for (size_t i = 1; i + 2 < fpts.size(); ++i) {
                     for (int s = 1; s <= m_steps; ++s) {
                         float t = (float)s / (float)m_steps;
-                        auto q = CatmullRom(fpts[i - 1], fpts[i], fpts[i + 1], fpts[i + 2], t);
+                        auto q = catmullRom(fpts[i - 1], fpts[i], fpts[i + 1], fpts[i + 2], t);
                         sink->AddLine(D2D1::Point2F(q.x, q.y));
                     }
                 }
@@ -237,8 +245,8 @@ void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
             }
             geo->Release();
         }
-    } else if (pts.size() >= 2) {
-        // 对于2-3个点，使用简单的直线连接
+    } else if (points.size() >= 2) {
+        // For 2-3 points, use simple line connections
         if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
             ID2D1GeometrySink* sink = nullptr;
             if (SUCCEEDED(geo->Open(&sink))) {
@@ -271,12 +279,14 @@ void MouseTrailRenderer::Render(const std::vector<POINT>& pts) {
     ReleaseDC(NULL, hdcScreen);
 }
 
-void MouseTrailRenderer::Clear() {
-    if (!m_renderTarget)
+void MouseTrailRenderer::clear() {
+    if (!m_renderTarget) {
         return;
+    }
     RECT bind = {0, 0, m_width, m_height};
-    if (FAILED(m_renderTarget->BindDC(m_memDC, &bind)))
+    if (FAILED(m_renderTarget->BindDC(m_memDC, &bind))) {
         return;
+    }
     m_renderTarget->BeginDraw();
     m_renderTarget->Clear(D2D1::ColorF(0, 0.0f));
     m_renderTarget->EndDraw();
@@ -288,4 +298,5 @@ void MouseTrailRenderer::Clear() {
     UpdateLayeredWindow(m_hwnd, hdcScreen, &ptDst, &size, m_memDC, &ptSrc, 0, &bf, ULW_ALPHA);
     ReleaseDC(NULL, hdcScreen);
 }
+
 }  // namespace VirtualDesktop

@@ -24,17 +24,14 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-deprecated-literal-operator)
 endif()
 
-# Include directories
-include_directories(src third_party)
-
 # Add source files
 file(GLOB_RECURSE SOURCES 
     "src/*.cpp"
 )
 file(GLOB_RECURSE HEADERS 
     "src/*.h" 
+    "include/*.h"
 )
-
 file(GLOB_RECURSE RESOURCES 
     "src/*.rc"
 )
@@ -42,24 +39,12 @@ file(GLOB_RECURSE RESOURCES
 # Main executable (WIN32 hides console)
 add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
 
-# Group files in Visual Studio solution to match directory structure
-# source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${SOURCES})
-# source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${HEADERS})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${RESOURCES})
-
-# Also group by folder structure
-foreach(source_file ${SOURCES} ${HEADERS} ${RESOURCES})
-    get_filename_component(source_path "${source_file}" PATH)
-    file(RELATIVE_PATH source_path_rel "${CMAKE_CURRENT_SOURCE_DIR}/src" "${source_path}")
-    if ("${source_path_rel}" STREQUAL "")
-        set(source_path_rel "root")
-    endif()
-    string(REPLACE "/" "\\" source_path_msvc "${source_path_rel}")
-    source_group("${source_path_msvc}" FILES "${source_file}")
-endforeach()
-
+# Include directories
 target_include_directories(VirtualDesktopSwitcher PRIVATE 
-${CMAKE_CURRENT_SOURCE_DIR})
+include
+src
+third_party
+)
 
 # Windows specific libraries
 if(WIN32)

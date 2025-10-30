@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "DesktopManager/DesktopManager.h"
 #include "GestureAnalyzer/GestureAnalyzer.h"

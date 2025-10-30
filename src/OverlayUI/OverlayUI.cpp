@@ -1,4 +1,4 @@
-﻿#include "OverlayUI.h"
+﻿#include "OverlayUI/OverlayUI.h"
 #include "utils.h"
 #include <d2d1_1.h>
 #include <wrl/client.h>
@@ -23,7 +23,7 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
     windowClass.lpfnWndProc = DefWindowProc;
     windowClass.hInstance = GetModuleHandle(nullptr);
     windowClass.lpszClassName = className;
-    windowClass.lpfnWndProc = WinProc;
+    windowClass.lpfnWndProc = windowProc;
     if (!RegisterClass(&windowClass)) {
         return false;
     }
@@ -35,15 +35,15 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
     m_hWnd = CreateWindowExW(ex, className, L"", WS_POPUP, 0, 0, screenWidth, screenHeight, NULL, NULL, hInst, this);
-    Trace("overlay window created w=%d, h=%d (fallback)", screenWidth, screenHeight);
+    trace("overlay window created w=%d, h=%d (fallback)", screenWidth, screenHeight);
     // Apply settings to the mouse trail renderer if settings are available
     if (m_settings) {
         std::wstring colorHex = m_settings->getOverlayColor();
         float lineWidth = static_cast<float>(m_settings->getGestureLineWidth());
-        m_mouseTrailRenderer.SetTrailStyle(colorHex, lineWidth);
+        m_mouseTrailRenderer.setTrailStyle(colorHex, lineWidth);
     }
 
-    m_mouseTrailRenderer.Initialize(m_hWnd);
+    m_mouseTrailRenderer.initialize(m_hWnd);
     return true;
 }
 
@@ -53,14 +53,14 @@ void OverlayUI::setSettings(const Settings& settings) {
     // Apply settings to the mouse trail renderer
     std::wstring colorHex = m_settings->getOverlayColor();
     float lineWidth = static_cast<float>(m_settings->getGestureLineWidth());
-    m_mouseTrailRenderer.SetTrailStyle(colorHex, lineWidth);
+    m_mouseTrailRenderer.setTrailStyle(colorHex, lineWidth);
 }
 
 void OverlayUI::clear() {
-    m_mouseTrailRenderer.Clear();
+    m_mouseTrailRenderer.clear();
 }
 
-LRESULT OverlayUI::WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT OverlayUI::windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     if (message == WM_CREATE) {
         // Store the OverlayUI instance in window user data
         CREATESTRUCT* pcs = (CREATESTRUCT*)lParam;
@@ -74,7 +74,7 @@ LRESULT OverlayUI::WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
             case WM_DISPLAYCHANGE:
             case WM_SETTINGCHANGE: {
                 if (pOverlay) {
-                    pOverlay->m_mouseTrailRenderer.ResizeForMonitors();
+                    pOverlay->m_mouseTrailRenderer.resizeForMonitors();
                 }
                 break;
             }
@@ -110,7 +110,7 @@ void OverlayUI::updatePosition(int x, int y) {
     // Add new point to trajectory
     POINT newPoint = {x, y};
     m_trajectoryPoints.push_back(newPoint);
-    Trace("point added...[%d,%d]", x, y);
+    trace("point added...[%d,%d]", x, y);
     // Render the updated trajectory
     render(m_trajectoryPoints);
 }
@@ -119,7 +119,7 @@ void OverlayUI::render(const std::vector<POINT>& points) {
     if (m_hWnd == nullptr) {
         return;
     }
-    m_mouseTrailRenderer.Render(points);
+    m_mouseTrailRenderer.render(points);
 }
 
 }  // namespace VirtualDesktop

@@ -11,7 +11,7 @@ Application::Application(HINSTANCE hInstance) :
 }
 
 bool Application::initialize() {
-    // 使用更兼容的方式设置DPI感知
+    // Use more compatible way to set DPI awareness
     SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
     if (!m_settings.load(L"config.json")) {
@@ -36,7 +36,7 @@ bool Application::initialize() {
         PostQuitMessage(0);
     });
 
-    MouseHook& mouseHook = MouseHook::GetInstance();
+    MouseHook& mouseHook = MouseHook::getInstance();
     if (!mouseHook.initialize()) {
         return false;
     }
@@ -45,14 +45,14 @@ bool Application::initialize() {
     // we create a local copy of the callback to use with the mouse hook
     auto callback = [this](int code, WPARAM wParam, LPARAM lParam) {
         UNREFERENCED_PARAMETER(code);
-        // 鼠标侧键按下
+        // Mouse side button pressed
         if (wParam == WM_XBUTTONDOWN) {
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
             bool isBackButton = (HIWORD(mouseData->mouseData) == XBUTTON1);
             if (!isBackButton) {
                 return;
             }
-            // 开始分析手势
+            // Start gesture analysis
             m_gestureAnalyzer.clearPositions();
             m_gestureAnalyzer.addPosition(mouseData->pt.x, mouseData->pt.y);
             m_overlay.show();
@@ -63,7 +63,7 @@ bool Application::initialize() {
             if (!isBackButton) {
                 return;
             }
-            // 分析手势并切换虚拟桌面
+            // Analyze gesture and switch virtual desktop
             auto direction = m_gestureAnalyzer.analyzeGesture();
             if (direction == GestureAnalyzer::Direction::Left) {
                 m_desktopManager.switchDesktop(false);
@@ -73,7 +73,7 @@ bool Application::initialize() {
             m_gestureAnalyzer.clearPositions();
             m_overlay.hide();
         } else if (wParam == WM_MOUSEMOVE) {
-            // 记录鼠标移动位置仅当侧键按下时
+            // Record mouse movement only when side button is pressed
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
             if (m_gestureAnalyzer.isGestureInProgress()) {
                 m_gestureAnalyzer.addPosition(mouseData->pt.x, mouseData->pt.y);

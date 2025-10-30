@@ -1,4 +1,5 @@
-﻿#include "Settings.h"
+﻿#include "Settings/Settings.h"
+#include "utils.h"
 #include <Windows.h>
 #include <fstream>
 #include <string>
@@ -12,21 +13,6 @@ constexpr const char* DEFAULT_CONFIG = R"(
         "overlay_color": "#6495EDAA"
     }
 )";
-
-// unicode to utf8
-std::string utf8_encode(const std::wstring& wide_str) {
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), NULL, 0, NULL, NULL);
-    std::string strTo(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, &wide_str[0], (int)wide_str.size(), &strTo[0], size_needed, NULL, NULL);
-    return strTo;
-}
-
-std::wstring utf8_decode(const std::string& utf8_str) {
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), (int)utf8_str.size(), NULL, 0);
-    std::wstring strTo(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), (int)utf8_str.size(), &strTo[0], size_needed);
-    return strTo;
-}
 }  // namespace
 
 bool Settings::load(const std::wstring& filePath) {

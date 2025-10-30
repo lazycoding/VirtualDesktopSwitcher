@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#include "GestureAnalyzer.h"
+#include "GestureAnalyzer/GestureAnalyzer.h"
 #include <cmath>
 
 namespace VirtualDesktop {

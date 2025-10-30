@@ -1,6 +1,5 @@
-﻿#pragma once
+#pragma once
 #include <string>
-
 #include "nlohmann/json.hpp"
 
 namespace VirtualDesktop {
