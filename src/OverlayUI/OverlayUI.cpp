@@ -31,11 +31,30 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
     // Create window with transparent properties
     DWORD ex = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
 
-    // Fallback to primary monitor
-    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-    m_hWnd = CreateWindowExW(ex, className, L"", WS_POPUP, 0, 0, screenWidth, screenHeight, NULL, NULL, hInst, this);
-    trace("overlay window created w=%d, h=%d (fallback)", screenWidth, screenHeight);
+    // Use virtual screen size for multi-monitor support
+    int virtualScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    int virtualScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    int virtualScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    int virtualScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+    m_hWnd = CreateWindowExW(
+            ex,
+            className,
+            L"",
+            WS_POPUP,
+            virtualScreenLeft,
+            virtualScreenTop,
+            virtualScreenWidth,
+            virtualScreenHeight,
+            NULL,
+            NULL,
+            hInst,
+            this);
+    trace("overlay window created at [%d, %d] size %d x %d (virtual screen)",
+          virtualScreenLeft,
+          virtualScreenTop,
+          virtualScreenWidth,
+          virtualScreenHeight);
     // Apply settings to the mouse trail renderer if settings are available
     if (m_settings) {
         std::wstring colorHex = m_settings->getOverlayColor();

@@ -59,42 +59,16 @@ BOOL CALLBACK MouseTrailRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LP
 }
 
 void MouseTrailRenderer::computeVirtualScreenRect() {
-    if (m_hwnd) {
-        // Use the monitor where the window is located
-        HMONITOR hMonitor = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
-        MONITORINFO monitorInfo;
-        monitorInfo.rcWork = {0, 0, 0, 0};
-        monitorInfo.dwFlags = 0;
-        monitorInfo.cbSize = sizeof(monitorInfo);
-        if (GetMonitorInfoW(hMonitor, &monitorInfo)) {
-            // Use the monitor's work area (excluding taskbar)
-            m_rcVirtual = monitorInfo.rcWork;
-            m_width = std::max((LONG)1, m_rcVirtual.right - m_rcVirtual.left);
-            m_height = std::max((LONG)1, m_rcVirtual.bottom - m_rcVirtual.top);
-            trace("monitor rect: [%d, %d, %d, %d]",
-                  m_rcVirtual.left,
-                  m_rcVirtual.top,
-                  m_rcVirtual.right,
-                  m_rcVirtual.bottom);
-            trace("monitor size: %d x %d", m_width, m_height);
-            return;
-        }
-    }
+    // Use virtual screen metrics for multi-monitor support
+    m_rcVirtual.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    m_rcVirtual.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    m_rcVirtual.right = m_rcVirtual.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    m_rcVirtual.bottom = m_rcVirtual.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-    // Fallback to primary monitor
-    RECT r = {0, 0, 0, 0};
-    EnumDisplayMonitors(NULL, NULL, monitorEnumProc, (LPARAM)&r);
-    if (IsRectEmpty(&r)) {
-        r.left = 0;
-        r.top = 0;
-        r.right = GetSystemMetrics(SM_CXSCREEN);
-        r.bottom = GetSystemMetrics(SM_CYSCREEN);
-    }
-    m_rcVirtual = r;
-    m_width = std::max((LONG)1, r.right - r.left);
-    m_height = std::max((LONG)1, r.bottom - r.top);
-    trace("fallback rect: [%d, %d, %d, %d]", r.left, r.top, r.right, r.bottom);
-    trace("fallback size: %d x %d", m_width, m_height);
+    m_width = std::max((LONG)1, m_rcVirtual.right - m_rcVirtual.left);
+    m_height = std::max((LONG)1, m_rcVirtual.bottom - m_rcVirtual.top);
+
+    // Virtual screen coordinates calculated for multi-monitor support
 }
 
 bool MouseTrailRenderer::initialize(HWND hwndParent) {
@@ -104,9 +78,6 @@ bool MouseTrailRenderer::initialize(HWND hwndParent) {
     }
 
     computeVirtualScreenRect();
-
-    // Set window size to m_rcVirtual
-    SetWindowPos(m_hwnd, NULL, m_rcVirtual.left, m_rcVirtual.top, m_width, m_height, SWP_NOACTIVATE | SWP_NOZORDER);
 
     createDIBAndRenderTarget();
     return true;
