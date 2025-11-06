@@ -107,6 +107,7 @@ private:
     std::vector<std::pair<int32_t, int32_t>> m_rawPositions;
     std::vector<Point> m_processedGesture;
     static std::vector<std::vector<Point>> s_templates; // Predefined gesture templates
+    mutable bool m_useUnistroke; // Flag to determine which algorithm to use
 
     // $1 Unistroke Recognizer methods
     std::vector<Point> resample(const std::vector<Point>& points, int n) const;
@@ -121,8 +122,19 @@ private:
     double pathLength(const std::vector<Point>& points) const;
     double distance(const Point& p1, const Point& p2) const;
 
+    // Algorithm methods
+    Direction analyzeGestureSimple() const;
+    Direction analyzeGestureUnistroke() const;
+
     // Initialize predefined gesture templates
     void initializeTemplates();
+
+public:
+    /**
+     * @brief Sets the gesture recognition algorithm to use
+     * @param useUnistroke true to use $1 Unistroke Recognizer, false to use simple algorithm
+     */
+    void setAlgorithm(bool useUnistroke);
 };
 
 }  // namespace VirtualDesktop
