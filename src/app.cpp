@@ -3,6 +3,8 @@
 #include "utils.h"
 #include <Windows.h>
 #include <ShellScalingApi.h>
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 
 namespace VirtualDesktop {
 
@@ -14,8 +16,22 @@ bool Application::initialize() {
     // Use more compatible way to set DPI awareness
     SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
 
-    if (!m_settings.load(L"config.json")) {
-        return false;
+    // Construct config file path relative to executable location
+    wchar_t exePath[MAX_PATH];
+    GetModuleFileNameW(NULL, exePath, MAX_PATH);
+    // Remove filename to keep only directory
+    PathRemoveFileSpecW(exePath);
+    
+    // Combine directory with config filename
+    std::wstring configPath = std::wstring(exePath) + L"\\config.json";
+    
+    // Try to load existing config file
+    if (!m_settings.load(configPath.c_str())) {
+        // If config file doesn't exist, save default settings
+        if (!m_settings.save(configPath.c_str())) {
+            // If we can't save the default config, return false
+            return false;
+        }
     }
 
     if (!m_overlay.initialize(m_hInstance)) {
