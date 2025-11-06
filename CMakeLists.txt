@@ -50,7 +50,7 @@ third_party
 if(WIN32)
     # Target Windows 10 (0x0A00) or later
     target_link_libraries(VirtualDesktopSwitcher PRIVATE 
-        user32 gdi32 d2d1 shell32 Shcore)
+        user32 gdi32 d2d1 shell32 Shcore)  # Removed gdiplus, using standard GDI
     target_compile_definitions(VirtualDesktopSwitcher PRIVATE 
         WIN32_LEAN_AND_MEAN 
         NOMINMAX 

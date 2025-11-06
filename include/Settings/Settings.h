@@ -47,6 +47,18 @@ public:
      */
     void setGestureLineWidth(int value);
 
+    /**
+     * @brief Gets the rendering mode (Direct2D or GDI+)
+     * @return Rendering mode string ("Direct2D" or "GDI+")
+     */
+    std::wstring getRenderingMode() const;
+
+    /**
+     * @brief Sets the rendering mode
+     * @param mode Rendering mode string ("Direct2D" or "GDI+")
+     */
+    void setRenderingMode(const std::wstring& mode);
+
     Settings() = default;
     ~Settings() = default;
 

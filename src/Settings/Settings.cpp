@@ -10,7 +10,8 @@ namespace {
 constexpr const char* DEFAULT_CONFIG = R"(
     {
         "gesture_line_width": 5,
-        "overlay_color": "#6495EDAA"
+        "overlay_color": "#6495EDAA",
+        "rendering_mode": "GDI+"
     }
 )";
 }  // namespace
@@ -59,6 +60,17 @@ int Settings::getGestureLineWidth() const {
 
 void Settings::setGestureLineWidth(int width) {
     m_config["gesture_line_width"] = std::clamp(width, 1, 10);
+}
+
+std::wstring Settings::getRenderingMode() const {
+    std::string mode = m_config.value("rendering_mode", "Direct2D");
+    return utf8_decode(mode);
+}
+
+void Settings::setRenderingMode(const std::wstring& mode) {
+    if (mode == L"GDI+" || mode == L"Direct2D") {
+        m_config["rendering_mode"] = utf8_encode(mode);
+    }
 }
 
 }  // namespace VirtualDesktop

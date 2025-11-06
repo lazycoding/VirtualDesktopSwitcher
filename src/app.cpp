@@ -1,6 +1,6 @@
 ﻿#include "app.h"
 #include "MouseHook/MouseHook.h"
-
+#include "utils.h"
 #include <Windows.h>
 #include <ShellScalingApi.h>
 
@@ -65,6 +65,7 @@ bool Application::initialize() {
             }
             // Analyze gesture and switch virtual desktop
             auto direction = m_gestureAnalyzer.analyzeGesture();
+            trace("Gesture direction: %d\n", static_cast<int>(direction));
             if (direction == GestureAnalyzer::Direction::Left) {
                 m_desktopManager.switchDesktop(false);
             } else if (direction == GestureAnalyzer::Direction::Right) {

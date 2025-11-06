@@ -203,41 +203,42 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
         bezierTableInitialized = true;
     }
 
+    // Set high-quality rendering options
+    m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+    m_renderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
+
     // Create geometry for rendering
     ID2D1PathGeometry* geo = nullptr;
-    if (points.size() >= 3) {
-        // Use quadratic Bezier curves for smooth rendering (requires at least 3 points)
+    if (points.size() >= 2) {
+        // Use path geometry for smooth rendering
         if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
             ID2D1GeometrySink* sink = nullptr;
             if (SUCCEEDED(geo->Open(&sink))) {
                 // Start from first point
                 sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
 
-                // Use quadratic Bezier curves between points
-                for (size_t i = 0; i + 2 < fpts.size(); i += 1) {
-                    const FPoint& p0 = fpts[i];
-                    const FPoint& p1 = fpts[i + 1];
-                    const FPoint& p2 = fpts[i + 2];
-
-                    // Control point is the midpoint between p0 and p1
-                    FPoint controlPoint = {(p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f};
-
-                    // Add quadratic Bezier curve from p0 to p1 with control point
-                    if (i == 0) {
-                        sink->AddLine(D2D1::Point2F(p0.x, p0.y));
-                    }
-                    sink->AddQuadraticBezier(
-                            D2D1::QuadraticBezierSegment(
-                                    D2D1::Point2F(controlPoint.x, controlPoint.y), D2D1::Point2F(p1.x, p1.y)));
-
-                    // For the last segment, add final curve to p2
-                    if (i + 3 >= fpts.size()) {
-                        FPoint finalControlPoint = {(p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f};
-                        sink->AddQuadraticBezier(
+                // Use polylines for smoother basic line drawing or Bezier for even smoother curves
+                if (points.size() >= 3) {
+                    // Use quadratic Bezier curves for very smooth rendering
+                    for (size_t i = 0; i + 1 < fpts.size(); i++) {
+                        if (i + 2 < fpts.size()) {
+                            // Use middle point as control point for smoother curve
+                            FPoint controlPoint = fpts[i + 1]; // Use the middle point as control
+                            sink->AddQuadraticBezier(
                                 D2D1::QuadraticBezierSegment(
-                                        D2D1::Point2F(finalControlPoint.x, finalControlPoint.y),
-                                        D2D1::Point2F(p2.x, p2.y)));
-                        break;
+                                    D2D1::Point2F(controlPoint.x, controlPoint.y), 
+                                    D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)
+                                )
+                            );
+                        } else {
+                            // For the last segment
+                            sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
+                        }
+                    }
+                } else {
+                    // For 2 points, just draw a straight line
+                    for (size_t i = 1; i < fpts.size(); i++) {
+                        sink->AddLine(D2D1::Point2F(fpts[i].x, fpts[i].y));
                     }
                 }
 
@@ -252,26 +253,14 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
         }
     }
 
-    // Handle simple line connections for 2 points
-    if (points.size() == 2) {
-        ID2D1PathGeometry* lineGeo = nullptr;
-        if (SUCCEEDED(m_factory->CreatePathGeometry(&lineGeo))) {
-            ID2D1GeometrySink* sink = nullptr;
-            if (SUCCEEDED(lineGeo->Open(&sink))) {
-                sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
-                sink->AddLine(D2D1::Point2F(fpts[1].x, fpts[1].y));
-                sink->EndFigure(D2D1_FIGURE_END_OPEN);
-                sink->Close();
-                sink->Release();
-
-                m_brush->SetColor(m_trailColor);
-                m_renderTarget->DrawGeometry(lineGeo, m_brush, m_lineWidth, m_stroke);
-            }
-            lineGeo->Release();
-        }
+    HRESULT hr = m_renderTarget->EndDraw();
+    // D2D1_ERROR_RECREATE_TARGET was used in older versions of Direct2D
+    // In newer versions, we should check for D2DERR_RECREATE_TARGET or generic errors
+    if (hr == D2DERR_RECREATE_TARGET) {
+        // If the render target needs to be recreated, handle it appropriately
+        // For now, just return and let it be recreated on next render call
+        return;
     }
-
-    m_renderTarget->EndDraw();
 
     HDC hdcScreen = GetDC(NULL);
     POINT ptDst = {m_rcVirtual.left, m_rcVirtual.top};

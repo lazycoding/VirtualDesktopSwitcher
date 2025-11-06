@@ -6,47 +6,51 @@ namespace VirtualDesktop {
 
 void GestureAnalyzer::addPosition(int32_t x, int32_t y) {
     // Filter out duplicate positions to reduce noise
-    if (!m_positions.empty() && m_positions.back().first == x && m_positions.back().second == y) {
+    if (!m_rawPositions.empty() && m_rawPositions.back().first == x && m_rawPositions.back().second == y) {
         return;
     }
-    m_positions.emplace_back(x, y);
+    m_rawPositions.emplace_back(x, y);
 }
 
 GestureAnalyzer::Direction GestureAnalyzer::analyzeGesture() const {
-    // Simplified: only determine horizontal direction (Left / Right / None)
-    if (m_positions.size() < GestureAnalyzer::MIN_POSITIONS) {
+    if (m_rawPositions.size() < 3) { // Need at least 3 points for recognition
         return Direction::None;
     }
 
     // Total displacement from first to last recorded position
-    int32_t totalDx = m_positions.back().first - m_positions.front().first;
-    int32_t totalDy = m_positions.back().second - m_positions.front().second;
+    int32_t totalDx = m_rawPositions.back().first - m_rawPositions.front().first;
+    int32_t totalDy = m_rawPositions.back().second - m_rawPositions.front().second;
 
-    // SPDLOG_DEBUG("Gesture analysis - totalDx: {}, totalDy: {}", totalDx, totalDy);
-
-    // Only consider significant horizontal movement as a swipe
-    if (std::abs(totalDx) < MIN_SWIPE_DISTANCE) {
+    // Check if movement is significant enough
+    const int32_t MIN_SWIPE_DISTANCE = 50; 
+    if (std::abs(totalDx) < MIN_SWIPE_DISTANCE && std::abs(totalDy) < MIN_SWIPE_DISTANCE) {
         return Direction::None;
     }
 
-    if (std::abs(totalDy) > std::abs(totalDx)) {
-        // Vertical movement dominates, ignore for horizontal-only detection
-        return Direction::None;
-    }
-
-    if (totalDx > 0) {
-        return Direction::Right;
+    // Determine primary direction based on dominant axis
+    if (std::abs(totalDx) >= std::abs(totalDy)) {
+        // Horizontal movement dominates
+        if (totalDx > 0) {
+            return Direction::Right;
+        } else {
+            return Direction::Left;
+        }
     } else {
-        return Direction::Left;
+        // Vertical movement dominates
+        if (totalDy > 0) {
+            return Direction::Down;
+        } else {
+            return Direction::Up;
+        }
     }
 }
 
 void GestureAnalyzer::clearPositions() {
-    m_positions.clear();
+    m_rawPositions.clear();
 }
 
 bool GestureAnalyzer::isGestureInProgress() const {
-    return !m_positions.empty();
+    return !m_rawPositions.empty();
 }
 
 }  // namespace VirtualDesktop
