@@ -1,4 +1,5 @@
-#pragma once
+﻿#pragma once
+#include "OverlayUI/IRenderer.h"
 #include <Windows.h>
 #include <d2d1_1.h>
 #include <string>
@@ -10,40 +11,40 @@ namespace VirtualDesktop {
 /**
  * @brief Renders mouse trail using Direct2D for gesture visualization
  */
-class MouseTrailRenderer {
+class DxRenderer : public IRenderer {
 public:
-    MouseTrailRenderer();
-    ~MouseTrailRenderer();
+    DxRenderer();
+    ~DxRenderer();
 
     /**
      * @brief Sets the trail style (color and line width)
      * @param colorHex Color in hex format (#RRGGBBAA)
      * @param lineWidth Width of the trail line
      */
-    void setTrailStyle(const std::wstring& colorHex, float lineWidth);
+    void setTrailStyle(const std::wstring& colorHex, float lineWidth) override;
 
     /**
      * @brief Initializes the renderer with parent window
      * @param hwndParent Parent window handle
      * @return true if initialization succeeded
      */
-    bool initialize(HWND hwndParent);
+    bool initialize(HWND hwndParent) override;
 
     /**
      * @brief Resizes the renderer for multi-monitor setups
      */
-    void resizeForMonitors();
+    void resizeForMonitors() override;
 
     /**
      * @brief Renders the mouse trail
      * @param points Vector of mouse positions
      */
-    void render(const std::vector<POINT>& points);
+    void render(const std::vector<POINT>& points) override;
 
     /**
      * @brief Clears the rendered trail
      */
-    void clear();
+    void clear() override;
 
 private:
     struct FPoint {
@@ -77,10 +78,10 @@ private:
     static constexpr int STEPS = 10;
 
     // Disable copy and move
-    MouseTrailRenderer(const MouseTrailRenderer&) = delete;
-    MouseTrailRenderer& operator=(const MouseTrailRenderer&) = delete;
-    MouseTrailRenderer(MouseTrailRenderer&&) = delete;
-    MouseTrailRenderer& operator=(MouseTrailRenderer&&) = delete;
+    DxRenderer(const DxRenderer&) = delete;
+    DxRenderer& operator=(const DxRenderer&) = delete;
+    DxRenderer(DxRenderer&&) = delete;
+    DxRenderer& operator=(DxRenderer&&) = delete;
 };
 
 }  // namespace VirtualDesktop

@@ -1,4 +1,4 @@
-# Build directories
+﻿# Build directories
 build/
 bin/
 lib/
@@ -69,3 +69,5 @@ coverage/
 .vs
 
 out/
+
+**/*.aps

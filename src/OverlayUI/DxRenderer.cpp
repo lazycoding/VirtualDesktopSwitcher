@@ -1,4 +1,4 @@
-﻿#include "OverlayUI/MouseTrailRenderer.h"
+﻿#include "OverlayUI/DxRenderer.h"
 #include "utils.h"
 #include <algorithm>
 
@@ -8,17 +8,17 @@
 
 namespace VirtualDesktop {
 
-MouseTrailRenderer::MouseTrailRenderer() {
+DxRenderer::DxRenderer() {
 }
 
-MouseTrailRenderer::~MouseTrailRenderer() {
+DxRenderer::~DxRenderer() {
     destroyDIBAndRenderTarget();
     if (m_factory) {
         m_factory->Release();
     }
 }
 
-D2D1_COLOR_F MouseTrailRenderer::hexToColorF(const std::wstring& hex) {
+D2D1_COLOR_F DxRenderer::hexToColorF(const std::wstring& hex) {
     if (hex.length() != 9 || hex[0] != L'#') {
         // Return default color if invalid format
         return D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
@@ -44,12 +44,12 @@ D2D1_COLOR_F MouseTrailRenderer::hexToColorF(const std::wstring& hex) {
             static_cast<float>(aValue) / 255.0f);
 }
 
-void MouseTrailRenderer::setTrailStyle(const std::wstring& colorHex, float lineWidth) {
+void DxRenderer::setTrailStyle(const std::wstring& colorHex, float lineWidth) {
     m_trailColor = hexToColorF(colorHex);
     m_lineWidth = std::clamp(lineWidth, 1.0f, 10.0f);
 }
 
-BOOL CALLBACK MouseTrailRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LPRECT lprc, LPARAM data) {
+BOOL CALLBACK DxRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LPRECT lprc, LPARAM data) {
     UNREFERENCED_PARAMETER(hMonitor);
     UNREFERENCED_PARAMETER(hdc);
 
@@ -58,7 +58,7 @@ BOOL CALLBACK MouseTrailRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LP
     return TRUE;
 }
 
-void MouseTrailRenderer::computeVirtualScreenRect() {
+void DxRenderer::computeVirtualScreenRect() {
     // Use virtual screen metrics for multi-monitor support
     m_rcVirtual.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
     m_rcVirtual.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
@@ -71,7 +71,7 @@ void MouseTrailRenderer::computeVirtualScreenRect() {
     // Virtual screen coordinates calculated for multi-monitor support
 }
 
-bool MouseTrailRenderer::initialize(HWND hwndParent) {
+bool DxRenderer::initialize(HWND hwndParent) {
     m_hwnd = hwndParent;
     if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_factory))) {
         return false;
@@ -83,13 +83,13 @@ bool MouseTrailRenderer::initialize(HWND hwndParent) {
     return true;
 }
 
-void MouseTrailRenderer::resizeForMonitors() {
+void DxRenderer::resizeForMonitors() {
     destroyDIBAndRenderTarget();
     computeVirtualScreenRect();
     createDIBAndRenderTarget();
 }
 
-void MouseTrailRenderer::createDIBAndRenderTarget() {
+void DxRenderer::createDIBAndRenderTarget() {
     destroyDIBAndRenderTarget();
 
     BITMAPV5HEADER bi = {};
@@ -130,7 +130,7 @@ void MouseTrailRenderer::createDIBAndRenderTarget() {
     }
 }
 
-void MouseTrailRenderer::destroyDIBAndRenderTarget() {
+void DxRenderer::destroyDIBAndRenderTarget() {
     if (m_brush) {
         m_brush->Release();
         m_brush = nullptr;
@@ -154,18 +154,14 @@ void MouseTrailRenderer::destroyDIBAndRenderTarget() {
     }
 }
 
-void MouseTrailRenderer::precomputeBezierTable() {
+void DxRenderer::precomputeBezierTable() {
     for (int i = 0; i < BEZIER_TABLE_SIZE; ++i) {
         float t = static_cast<float>(i) / (BEZIER_TABLE_SIZE - 1);
         s_bezierTable[i] = t * t;  // Precompute t^2 for quadratic bezier
     }
 }
 
-MouseTrailRenderer::FPoint MouseTrailRenderer::quadraticBezier(
-        const FPoint& p0,
-        const FPoint& p1,
-        const FPoint& p2,
-        float t) {
+DxRenderer::FPoint DxRenderer::quadraticBezier(const FPoint& p0, const FPoint& p1, const FPoint& p2, float t) {
     // Quadratic Bezier formula: B(t) = (1-t)^2 * P0 + 2*(1-t)*t * P1 + t^2 * P2
     float oneMinusT = 1.0f - t;
     float oneMinusTSquared = oneMinusT * oneMinusT;
@@ -175,7 +171,7 @@ MouseTrailRenderer::FPoint MouseTrailRenderer::quadraticBezier(
             oneMinusTSquared * p0.y + 2 * oneMinusT * t * p1.y + tSquared * p2.y};
 }
 
-void MouseTrailRenderer::render(const std::vector<POINT>& points) {
+void DxRenderer::render(const std::vector<POINT>& points) {
     if (!m_renderTarget || points.size() < 2) {
         return;
     }
@@ -223,13 +219,10 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
                     for (size_t i = 0; i + 1 < fpts.size(); i++) {
                         if (i + 2 < fpts.size()) {
                             // Use middle point as control point for smoother curve
-                            FPoint controlPoint = fpts[i + 1]; // Use the middle point as control
-                            sink->AddQuadraticBezier(
-                                D2D1::QuadraticBezierSegment(
-                                    D2D1::Point2F(controlPoint.x, controlPoint.y), 
-                                    D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)
-                                )
-                            );
+                            FPoint controlPoint = fpts[i + 1];  // Use the middle point as control
+                            sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(
+                                    D2D1::Point2F(controlPoint.x, controlPoint.y),
+                                    D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
                         } else {
                             // For the last segment
                             sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
@@ -272,7 +265,7 @@ void MouseTrailRenderer::render(const std::vector<POINT>& points) {
     ReleaseDC(NULL, hdcScreen);
 }
 
-void MouseTrailRenderer::clear() {
+void DxRenderer::clear() {
     if (!m_renderTarget) {
         return;
     }

@@ -1,9 +1,9 @@
-#pragma once
-#include "MouseTrailRenderer.h"
-#include "GdiRenderer.h"
+﻿#pragma once
+#include "IRenderer.h"
 #include "Settings/Settings.h"
 #include <Windows.h>
 #include <vector>
+#include <memory>
 
 namespace VirtualDesktop {
 /**
@@ -59,14 +59,12 @@ private:
     void switchRenderer();
 
 private:
-    MouseTrailRenderer m_direct2dRenderer;
-    GdiRenderer m_gdiRenderer;
-    bool m_useDirect2D;  // Flag to indicate which renderer to use
+    std::unique_ptr<IRenderer> m_renderer;  // Active renderer created by factory
     std::vector<POINT> m_trajectoryPoints;
-    std::vector<POINT> m_smoothedPoints; // For storing smoothed trajectory
-    HWND m_hWnd;
+    std::vector<POINT> m_smoothedPoints;  // For storing smoothed trajectory
+    HWND m_hWnd = nullptr;
     const Settings* m_settings;  // Pointer to settings instead of copy
-    
+
     // Smooth the trajectory points for less jittery display
     void smoothTrajectory();
 };

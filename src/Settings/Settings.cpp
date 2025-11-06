@@ -8,11 +8,11 @@ namespace VirtualDesktop {
 
 namespace {
 constexpr const char* DEFAULT_CONFIG = R"(
-    {
-        "gesture_line_width": 5,
-        "overlay_color": "#6495EDAA",
-        "rendering_mode": "GDI+"
-    }
+ {
+ "gesture_line_width":5,
+ "overlay_color": "#6495EDAA",
+ "rendering_mode": "GDI+"
+ }
 )";
 }  // namespace
 
@@ -21,6 +21,7 @@ bool Settings::load(const std::wstring& filePath) {
         std::ifstream file(filePath.c_str());
         if (!file.is_open()) {
             m_config = nlohmann::json::parse(DEFAULT_CONFIG);
+            return false;
         } else {
             m_config = nlohmann::json::parse(file);
         }
@@ -63,12 +64,12 @@ void Settings::setGestureLineWidth(int width) {
 }
 
 std::wstring Settings::getRenderingMode() const {
-    std::string mode = m_config.value("rendering_mode", "Direct2D");
+    std::string mode = m_config.value("rendering_mode", Settings::RENDERING_MODE_GDIPLUS);
     return utf8_decode(mode);
 }
 
 void Settings::setRenderingMode(const std::wstring& mode) {
-    if (mode == L"GDI+" || mode == L"Direct2D") {
+    if (mode == Settings::RENDERING_MODE_GDIPLUS_W || mode == Settings::RENDERING_MODE_DIRECT2D_W) {
         m_config["rendering_mode"] = utf8_encode(mode);
     }
 }

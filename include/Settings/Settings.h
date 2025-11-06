@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include "nlohmann/json.hpp"
 
@@ -9,6 +9,12 @@ namespace VirtualDesktop {
  */
 class Settings {
 public:
+    // Centralized rendering mode constants (UTF-8 and wide variants)
+    static inline const char* RENDERING_MODE_DIRECT2D = "Direct2D";
+    static inline const char* RENDERING_MODE_GDIPLUS = "GDI+";
+    static inline const std::wstring RENDERING_MODE_DIRECT2D_W = L"Direct2D";
+    static inline const std::wstring RENDERING_MODE_GDIPLUS_W = L"GDI+";
+
     /**
      * @brief Loads settings from config file
      * @param filePath Path to config file

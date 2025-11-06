@@ -1,4 +1,5 @@
-#pragma once
+﻿#pragma once
+#include "OverlayUI/IRenderer.h"
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -8,7 +9,7 @@ namespace VirtualDesktop {
 /**
  * @brief Renders mouse trail using Windows GDI for gesture visualization
  */
-class GdiRenderer {
+class GdiRenderer : public IRenderer {
 public:
     GdiRenderer();
     ~GdiRenderer();
@@ -18,30 +19,30 @@ public:
      * @param colorHex Color in hex format (#RRGGBBAA)
      * @param lineWidth Width of the trail line
      */
-    void setTrailStyle(const std::wstring& colorHex, float lineWidth);
+    void setTrailStyle(const std::wstring& colorHex, float lineWidth) override;
 
     /**
      * @brief Initializes the renderer with parent window
      * @param hwndParent Parent window handle
      * @return true if initialization succeeded
      */
-    bool initialize(HWND hwndParent);
+    bool initialize(HWND hwndParent) override;
 
     /**
      * @brief Resizes the renderer for multi-monitor setups
      */
-    void resizeForMonitors();
+    void resizeForMonitors() override;
 
     /**
      * @brief Renders the mouse trail
      * @param points Vector of mouse positions
      */
-    void render(const std::vector<POINT>& points);
+    void render(const std::vector<POINT>& points) override;
 
     /**
      * @brief Clears the rendered trail
      */
-    void clear();
+    void clear() override;
 
 private:
     HWND m_hwnd;
@@ -59,7 +60,7 @@ private:
 
     COLORREF hexToCOLORREF(const std::wstring& hex);
     void computeVirtualScreenRect();
-    
+
     // Draw smooth lines using Polyline instead of multiple LineTo calls
     void drawSmoothTrail(const std::vector<POINT>& points);
 

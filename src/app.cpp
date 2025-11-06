@@ -21,10 +21,12 @@ bool Application::initialize() {
     GetModuleFileNameW(NULL, exePath, MAX_PATH);
     // Remove filename to keep only directory
     PathRemoveFileSpecW(exePath);
-    
+
     // Combine directory with config filename
     std::wstring configPath = std::wstring(exePath) + L"\\config.json";
-    
+
+    trace("Config file path: %ls\n", configPath.c_str());
+
     // Try to load existing config file
     if (!m_settings.load(configPath.c_str())) {
         // If config file doesn't exist, save default settings
