@@ -1,16 +1,21 @@
 ﻿#include "OverlayUI.h"
 #include "DxRenderer.h"
 #include "GdiRenderer.h"
+#include "Settings/Settings.h"
 #include "utils.h"
 #include <d2d1_1.h>
+#include <string.h>
 #include <wrl/client.h>
 #include <cmath>
 
 namespace VirtualDesktop {
 
-static std::unique_ptr<IRenderer> createRendererByMode(const std::wstring& mode) {
-    if (mode == L"Direct2D") {
+static std::unique_ptr<IRenderer> createRendererByMode(const std::string& mode) {
+    // 字符串比较双方忽略大小写
+    if (_stricmp(mode.c_str(), Settings::RENDERING_MODE_DIRECT2D) == 0) {
         return std::make_unique<DxRenderer>();
+    } else if (_stricmp(mode.c_str(), Settings::RENDERING_MODE_GDIPLUS) == 0) {
+        return std::make_unique<GdiRenderer>();
     } else {
         return std::make_unique<GdiRenderer>();
     }
@@ -72,9 +77,9 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
         switchRenderer();
     } else {
         // Initialize GDI by default
-        std::wstring defaultColor = L"#6495EDAA";  // Default color
-        float defaultWidth = 5.0f;                 // Default width
-        m_renderer = createRendererByMode(L"GDI+");
+        std::string defaultColor = "#6495EDAA";  // Default color
+        float defaultWidth = 5.0f;               // Default width
+        m_renderer = createRendererByMode(Settings::RENDERING_MODE_GDIPLUS);
         if (m_renderer) {
             m_renderer->setTrailStyle(defaultColor, defaultWidth);
             m_renderer->initialize(m_hWnd);
@@ -89,7 +94,7 @@ void OverlayUI::switchRenderer() {
         return;
     }
 
-    std::wstring renderingMode = m_settings->getRenderingMode();
+    std::string renderingMode = m_settings->getRenderingMode();
 
     // Create new renderer according to setting
     std::unique_ptr<IRenderer> newRenderer = createRendererByMode(renderingMode);
@@ -102,14 +107,14 @@ void OverlayUI::switchRenderer() {
     }
 
     // Apply settings to new renderer
-    std::wstring colorHex = m_settings->getOverlayColor();
+    std::string colorHex = m_settings->getOverlayColor();
     float lineWidth = static_cast<float>(m_settings->getGestureLineWidth());
 
     newRenderer->setTrailStyle(colorHex, lineWidth);
     if (!newRenderer->initialize(m_hWnd)) {
         // If initialization fails for requested renderer, fall back to GDI
-        if (renderingMode != L"GDI+") {
-            newRenderer = createRendererByMode(L"GDI+");
+        if (_stricmp(renderingMode.c_str(), Settings::RENDERING_MODE_GDIPLUS) != 0) {
+            newRenderer = createRendererByMode(Settings::RENDERING_MODE_GDIPLUS);
             newRenderer->setTrailStyle(colorHex, lineWidth);
             newRenderer->initialize(m_hWnd);
         }

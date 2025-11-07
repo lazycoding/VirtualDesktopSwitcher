@@ -21,7 +21,7 @@ public:
      * @param colorHex Color in hex format (#RRGGBBAA)
      * @param lineWidth Width of the trail line
      */
-    void setTrailStyle(const std::wstring& colorHex, float lineWidth) override;
+    void setTrailStyle(const std::string& colorHex, float lineWidth) override;
 
     /**
      * @brief Initializes the renderer with parent window
@@ -52,7 +52,7 @@ private:
         float y;
     };
 
-    D2D1_COLOR_F hexToColorF(const std::wstring& hex);
+    D2D1_COLOR_F hexToColorF(const std::string& hex);
     static BOOL CALLBACK monitorEnumProc(HMONITOR hMonitor, HDC hdc, LPRECT lprc, LPARAM data);
     void computeVirtualScreenRect();
     void createDIBAndRenderTarget();

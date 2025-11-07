@@ -19,7 +19,7 @@ public:
      * @param colorHex Color in hex format (#RRGGBBAA)
      * @param lineWidth Width of the trail line
      */
-    void setTrailStyle(const std::wstring& colorHex, float lineWidth) override;
+    void setTrailStyle(const std::string& colorHex, float lineWidth) override;
 
     /**
      * @brief Initializes the renderer with parent window
@@ -58,7 +58,7 @@ private:
     LONG m_width;
     LONG m_height;
 
-    COLORREF hexToCOLORREF(const std::wstring& hex);
+    COLORREF hexToCOLORREF(const std::string& hex);
     void computeVirtualScreenRect();
 
     // Draw smooth lines using Polyline instead of multiple LineTo calls

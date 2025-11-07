@@ -1,5 +1,4 @@
 ﻿#include "Settings.h"
-#include "utils.h"
 #include <Windows.h>
 #include <fstream>
 #include <string>
@@ -31,6 +30,42 @@ constexpr const char* DEFAULT_CONFIG = R"(
 }
 )";
 }  // namespace
+
+// mousebutton to string
+std::string mouseButtonToString(MouseButton button) {
+    switch (button) {
+        case MouseButton::None:
+            return "None";
+        case MouseButton::Left:
+            return "Left";
+        case MouseButton::Right:
+            return "Right";
+        case MouseButton::Side1:
+            return "Side1";
+        case MouseButton::Side2:
+            return "Side2";
+        default:
+            return "None";
+    }
+}
+
+// string to mousebutton
+MouseButton stringToMouseButton(const std::string& button) {
+    // 忽略字母大小写
+    std::string buttonLower = button;
+    std::transform(buttonLower.begin(), buttonLower.end(), buttonLower.begin(), ::tolower);
+    if (buttonLower == "side1") {
+        return MouseButton::Side1;
+    } else if (buttonLower == "side2") {
+        return MouseButton::Side2;
+    } else if (buttonLower == "left") {
+        return MouseButton::Left;
+    } else if (buttonLower == "right") {
+        return MouseButton::Right;
+    } else {
+        return MouseButton::None;
+    }
+}
 
 bool Settings::load(const std::wstring& filePath) {
     try {
@@ -78,14 +113,14 @@ void Settings::setTrayIconEnabled(bool enabled) {
 }
 
 // Gesture settings
-std::wstring Settings::getTriggerButton() const {
+std::string Settings::getTriggerButton() const {
     std::string button = m_config.value("gesture/trigger_button", Settings::MOUSE_BUTTON_SIDE1);
-    return utf8_decode(button);
+    return button;
 }
 
-void Settings::setTriggerButton(const std::wstring& button) {
-    if (button == Settings::MOUSE_BUTTON_SIDE1_W || button == Settings::MOUSE_BUTTON_SIDE2_W) {
-        m_config["gesture/trigger_button"] = utf8_encode(button);
+void Settings::setTriggerButton(const std::string& button) {
+    if (button == Settings::MOUSE_BUTTON_SIDE1 || button == Settings::MOUSE_BUTTON_SIDE2) {
+        m_config["gesture/trigger_button"] = button;
     }
 }
 
@@ -97,14 +132,14 @@ void Settings::setGestureSensitivity(int value) {
     m_config["gesture/sensitivity"] = std::clamp(value, 1, 10);
 }
 
-std::wstring Settings::getOverlayColor() const {
+std::string Settings::getOverlayColor() const {
     std::string color = m_config.value("gesture/color", "#6495EDAA");
-    return utf8_decode(color);
+    return color;
 }
 
-void Settings::setOverlayColor(const std::wstring& color) {
+void Settings::setOverlayColor(const std::string& color) {
     if (color.size() == 9 && color[0] == L'#') {
-        m_config["gesture/color"] = utf8_encode(color);
+        m_config["gesture/color"] = color;
     }
 }
 
@@ -117,14 +152,14 @@ void Settings::setGestureLineWidth(int width) {
 }
 
 // Rendering settings
-std::wstring Settings::getRenderingMode() const {
+std::string Settings::getRenderingMode() const {
     std::string mode = m_config.value("rendering/mode", Settings::RENDERING_MODE_GDIPLUS);
-    return utf8_decode(mode);
+    return mode;
 }
 
-void Settings::setRenderingMode(const std::wstring& mode) {
-    if (mode == Settings::RENDERING_MODE_GDIPLUS_W || mode == Settings::RENDERING_MODE_DIRECT2D_W) {
-        m_config["rendering/mode"] = utf8_encode(mode);
+void Settings::setRenderingMode(const std::string& mode) {
+    if (mode == Settings::RENDERING_MODE_GDIPLUS || mode == Settings::RENDERING_MODE_DIRECT2D) {
+        m_config["rendering/mode"] = mode;
     }
 }
 

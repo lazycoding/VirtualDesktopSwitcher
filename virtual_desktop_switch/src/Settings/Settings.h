@@ -4,6 +4,15 @@
 
 namespace VirtualDesktop {
 
+// 定义鼠标切换键枚举类型
+enum class MouseButton { None, Left, Right, Side1, Side2 };
+
+// mousebutton to string
+std::string mouseButtonToString(MouseButton button);
+
+// string to mousebutton
+MouseButton stringToMouseButton(const std::string& button);
+
 /**
  * @brief Manages application configuration
  */
@@ -12,14 +21,10 @@ public:
     // Centralized rendering mode constants (UTF-8 and wide variants)
     static inline const char* RENDERING_MODE_DIRECT2D = "Direct2D";
     static inline const char* RENDERING_MODE_GDIPLUS = "GDI+";
-    static inline const std::wstring RENDERING_MODE_DIRECT2D_W = L"Direct2D";
-    static inline const std::wstring RENDERING_MODE_GDIPLUS_W = L"GDI+";
 
     // Mouse button constants
     static inline const char* MOUSE_BUTTON_SIDE1 = "Side1";
     static inline const char* MOUSE_BUTTON_SIDE2 = "Side2";
-    static inline const std::wstring MOUSE_BUTTON_SIDE1_W = L"Side1";
-    static inline const std::wstring MOUSE_BUTTON_SIDE2_W = L"Side2";
 
     /**
      * @brief Loads settings from config file
@@ -42,18 +47,18 @@ public:
     void setTrayIconEnabled(bool enabled);
 
     // Gesture settings
-    std::wstring getTriggerButton() const;
-    void setTriggerButton(const std::wstring& button);
+    std::string getTriggerButton() const;
+    void setTriggerButton(const std::string& button);
     int getGestureSensitivity() const;
     void setGestureSensitivity(int value);
-    std::wstring getOverlayColor() const;
-    void setOverlayColor(const std::wstring& color);
+    std::string getOverlayColor() const;
+    void setOverlayColor(const std::string& color);
     int getGestureLineWidth() const;
     void setGestureLineWidth(int value);
 
     // Rendering settings
-    std::wstring getRenderingMode() const;
-    void setRenderingMode(const std::wstring& mode);
+    std::string getRenderingMode() const;
+    void setRenderingMode(const std::string& mode);
     int getTransparency() const;
     void setTransparency(int value);
 

@@ -1,5 +1,4 @@
 ﻿#include "OverlayUI/DxRenderer.h"
-#include "utils.h"
 #include <algorithm>
 
 #include <ShellScalingApi.h>
@@ -7,6 +6,19 @@
 #include <winuser.h>
 
 namespace VirtualDesktop {
+
+namespace {
+const D2D1_COLOR_F DEFAULT_TRAIL_COLOR = D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
+
+bool parseHexComponent(const std::string& hex, size_t offset, float& result) {
+    try {
+        result = static_cast<float>(std::stoul(hex.substr(offset, 2), nullptr, 16)) / 255.0f;
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+}  // namespace
 
 DxRenderer::DxRenderer() {
 }
@@ -18,33 +30,20 @@ DxRenderer::~DxRenderer() {
     }
 }
 
-D2D1_COLOR_F DxRenderer::hexToColorF(const std::wstring& hex) {
-    if (hex.length() != 9 || hex[0] != L'#') {
-        // Return default color if invalid format
-        return D2D1::ColorF(D2D1::ColorF::SkyBlue, 0.9f);
+D2D1_COLOR_F DxRenderer::hexToColorF(const std::string& hex) {
+    if (hex.length() != 9 || hex[0] != '#') {
+        return DEFAULT_TRAIL_COLOR;
     }
 
-    // Parse RR, GG, BB, AA components
-    wchar_t* end;
-    std::wstring r = hex.substr(1, 2);
-    std::wstring g = hex.substr(3, 2);
-    std::wstring b = hex.substr(5, 2);
-    std::wstring a = hex.substr(7, 2);
-
-    long rValue = std::wcstol(r.c_str(), &end, 16);
-    long gValue = std::wcstol(g.c_str(), &end, 16);
-    long bValue = std::wcstol(b.c_str(), &end, 16);
-    long aValue = std::wcstol(a.c_str(), &end, 16);
-
-    // Convert to 0.0-1.0 range
-    return D2D1::ColorF(
-            static_cast<float>(rValue) / 255.0f,
-            static_cast<float>(gValue) / 255.0f,
-            static_cast<float>(bValue) / 255.0f,
-            static_cast<float>(aValue) / 255.0f);
+    float r, g, b, a;
+    if (parseHexComponent(hex, 1, r) && parseHexComponent(hex, 3, g) && parseHexComponent(hex, 5, b) &&
+        parseHexComponent(hex, 7, a)) {
+        return D2D1::ColorF(r, g, b, a);
+    }
+    return DEFAULT_TRAIL_COLOR;
 }
 
-void DxRenderer::setTrailStyle(const std::wstring& colorHex, float lineWidth) {
+void DxRenderer::setTrailStyle(const std::string& colorHex, float lineWidth) {
     m_trailColor = hexToColorF(colorHex);
     m_lineWidth = std::clamp(lineWidth, 1.0f, 10.0f);
 }
@@ -220,9 +219,10 @@ void DxRenderer::render(const std::vector<POINT>& points) {
                         if (i + 2 < fpts.size()) {
                             // Use middle point as control point for smoother curve
                             FPoint controlPoint = fpts[i + 1];  // Use the middle point as control
-                            sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(
-                                    D2D1::Point2F(controlPoint.x, controlPoint.y),
-                                    D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
+                            sink->AddQuadraticBezier(
+                                    D2D1::QuadraticBezierSegment(
+                                            D2D1::Point2F(controlPoint.x, controlPoint.y),
+                                            D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
                         } else {
                             // For the last segment
                             sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
