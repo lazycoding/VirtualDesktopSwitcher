@@ -1,21 +1,12 @@
-﻿cmake_minimum_required(VERSION 3.15)
-project(VirtualDesktopSwitcher LANGUAGES CXX RC)
-
-# Include FetchContent module
-include(FetchContent)
-
-# Download and install spdlog
-# FetchContent_Declare(
-#     spdlog
-#     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-#     GIT_TAG v1.13.0
-# )
-# FetchContent_MakeAvailable(spdlog)
+cmake_minimum_required(VERSION 3.15)
+project(virtual_desktop_switch LANGUAGES CXX RC)
 
 # Set C++ standard and compiler options
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(PROJ_NAME virtual_desktop_switch)
 
 # Project warnings
 if(MSVC)
@@ -26,32 +17,31 @@ endif()
 
 # Add source files
 file(GLOB_RECURSE SOURCES 
-    "src/*.cpp"
+    "*.cpp"
 )
 file(GLOB_RECURSE HEADERS 
-    "src/*.h" 
-    "include/*.h"
+    "*.h" 
 )
 file(GLOB_RECURSE RESOURCES 
-    "src/*.rc"
+    "*.rc"
 )
 
-# Main executable (WIN32 hides console)
-add_executable(VirtualDesktopSwitcher WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
+add_library(${PROJ_NAME} SHARED ${SOURCES} ${HEADERS} ${RESOURCES})
 
 # Include directories
-target_include_directories(VirtualDesktopSwitcher PRIVATE 
-include
-src
-third_party
+target_include_directories(${PROJ_NAME} 
+PUBLIC  include
+PRIVATE src third_party
 )
+
+target_compile_definitions(${PROJ_NAME} PUBLIC BUILDING_DLL)
 
 # Windows specific libraries
 if(WIN32)
     # Target Windows 10 (0x0A00) or later
-    target_link_libraries(VirtualDesktopSwitcher PRIVATE 
+    target_link_libraries(${PROJ_NAME} PRIVATE 
         user32 gdi32 d2d1 shell32 Shcore)  # Removed gdiplus, using standard GDI
-    target_compile_definitions(VirtualDesktopSwitcher PRIVATE 
+    target_compile_definitions(${PROJ_NAME} PRIVATE 
         WIN32_LEAN_AND_MEAN 
         NOMINMAX 
         UNICODE

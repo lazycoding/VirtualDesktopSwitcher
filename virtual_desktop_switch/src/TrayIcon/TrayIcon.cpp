@@ -1,7 +1,10 @@
-﻿#include "TrayIcon/TrayIcon.h"
+﻿#include "TrayIcon.h"
 #include <shellapi.h>
 #include "Resource/resource.h"
 #include <windows.h>
+#include "utils.h"
+
+extern HINSTANCE g_hInst;
 
 namespace VirtualDesktop {
 
@@ -38,7 +41,8 @@ bool TrayIcon::initialize() {
     wcsncpy_s(m_notifyIconData.szTip, sizeof(m_notifyIconData.szTip) / sizeof(wchar_t), m_tooltip.c_str(), _TRUNCATE);
 
     // Robust icon loading: ensure we have a valid module handle, try LoadImageW
-    HINSTANCE hInst = m_hInstance ? m_hInstance : GetModuleHandleW(NULL);
+    HINSTANCE hInst = g_hInst ? g_hInst : GetModuleHandleW(NULL);
+    trace("TrayIcon instance=>%p", hInst);
 
     HICON hIcon = (HICON)LoadImageW(hInst, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     if (!hIcon) {

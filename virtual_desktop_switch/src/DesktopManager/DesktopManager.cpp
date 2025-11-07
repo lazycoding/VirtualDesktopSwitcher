@@ -1,5 +1,4 @@
-#include "DesktopManager/DesktopManager.h"
-#include <windows.h>
+#include "DesktopManager.h"
 
 namespace VirtualDesktop {
 

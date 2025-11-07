@@ -1,4 +1,4 @@
-﻿#include "Settings/Settings.h"
+﻿#include "Settings.h"
 #include "utils.h"
 #include <Windows.h>
 #include <fstream>

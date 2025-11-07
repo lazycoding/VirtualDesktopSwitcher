@@ -1,7 +1,6 @@
-﻿#include "OverlayUI/OverlayUI.h"
-#include "OverlayUI/IRenderer.h"
-#include "OverlayUI/DxRenderer.h"
-#include "OverlayUI/GdiRenderer.h"
+﻿#include "OverlayUI.h"
+#include "DxRenderer.h"
+#include "GdiRenderer.h"
 #include "utils.h"
 #include <d2d1_1.h>
 #include <wrl/client.h>

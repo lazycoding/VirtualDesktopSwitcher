@@ -1,4 +1,4 @@
-#include "MouseHook/MouseHook.h"
+#include "MouseHook.h"
 #include <stdexcept>
 
 namespace VirtualDesktop {
