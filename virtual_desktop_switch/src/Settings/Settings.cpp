@@ -8,11 +8,27 @@ namespace VirtualDesktop {
 
 namespace {
 constexpr const char* DEFAULT_CONFIG = R"(
- {
- "gesture_line_width":5,
- "overlay_color": "#6495EDAA",
- "rendering_mode": "GDI+"
- }
+{
+  "basic": {
+    "auto_start": false,
+    "tray_icon": true
+  },
+  "gesture": {
+    "trigger_button": "Side1",
+    "sensitivity": 5,
+    "line_width": 5,
+    "color": "#6495EDAA"
+  },
+  "rendering": {
+    "mode": "GDI+",
+    "transparency": 80
+  },
+  "behavior": {
+    "desktop_cycle": true,
+    "desktop_preview": true,
+    "switch_animation": true
+  }
+}
 )";
 }  // namespace
 
@@ -44,34 +60,105 @@ bool Settings::save(const std::wstring& filePath) const {
     }
 }
 
+// Basic settings
+bool Settings::isAutoStartEnabled() const {
+    return m_config.value("basic/auto_start", false);
+}
+
+void Settings::setAutoStartEnabled(bool enabled) {
+    m_config["basic/auto_start"] = enabled;
+}
+
+bool Settings::isTrayIconEnabled() const {
+    return m_config.value("basic/tray_icon", true);
+}
+
+void Settings::setTrayIconEnabled(bool enabled) {
+    m_config["basic/tray_icon"] = enabled;
+}
+
+// Gesture settings
+std::wstring Settings::getTriggerButton() const {
+    std::string button = m_config.value("gesture/trigger_button", Settings::MOUSE_BUTTON_SIDE1);
+    return utf8_decode(button);
+}
+
+void Settings::setTriggerButton(const std::wstring& button) {
+    if (button == Settings::MOUSE_BUTTON_SIDE1_W || button == Settings::MOUSE_BUTTON_SIDE2_W) {
+        m_config["gesture/trigger_button"] = utf8_encode(button);
+    }
+}
+
+int Settings::getGestureSensitivity() const {
+    return m_config.value("gesture/sensitivity", 5);
+}
+
+void Settings::setGestureSensitivity(int value) {
+    m_config["gesture/sensitivity"] = std::clamp(value, 1, 10);
+}
+
 std::wstring Settings::getOverlayColor() const {
-    std::string color = m_config.value("overlay_color", "#6495EDAA");
+    std::string color = m_config.value("gesture/color", "#6495EDAA");
     return utf8_decode(color);
 }
 
 void Settings::setOverlayColor(const std::wstring& color) {
     if (color.size() == 9 && color[0] == L'#') {
-        m_config["overlay_color"] = utf8_encode(color);
+        m_config["gesture/color"] = utf8_encode(color);
     }
 }
 
 int Settings::getGestureLineWidth() const {
-    return m_config.value("gesture_line_width", 3);
+    return m_config.value("gesture/line_width", 5);
 }
 
 void Settings::setGestureLineWidth(int width) {
-    m_config["gesture_line_width"] = std::clamp(width, 1, 10);
+    m_config["gesture/line_width"] = std::clamp(width, 1, 10);
 }
 
+// Rendering settings
 std::wstring Settings::getRenderingMode() const {
-    std::string mode = m_config.value("rendering_mode", Settings::RENDERING_MODE_GDIPLUS);
+    std::string mode = m_config.value("rendering/mode", Settings::RENDERING_MODE_GDIPLUS);
     return utf8_decode(mode);
 }
 
 void Settings::setRenderingMode(const std::wstring& mode) {
     if (mode == Settings::RENDERING_MODE_GDIPLUS_W || mode == Settings::RENDERING_MODE_DIRECT2D_W) {
-        m_config["rendering_mode"] = utf8_encode(mode);
+        m_config["rendering/mode"] = utf8_encode(mode);
     }
+}
+
+int Settings::getTransparency() const {
+    return m_config.value("rendering/transparency", 80);
+}
+
+void Settings::setTransparency(int value) {
+    m_config["rendering/transparency"] = std::clamp(value, 0, 100);
+}
+
+// Behavior settings
+bool Settings::isDesktopCycleEnabled() const {
+    return m_config.value("behavior/desktop_cycle", true);
+}
+
+void Settings::setDesktopCycleEnabled(bool enabled) {
+    m_config["behavior/desktop_cycle"] = enabled;
+}
+
+bool Settings::isDesktopPreviewEnabled() const {
+    return m_config.value("behavior/desktop_preview", true);
+}
+
+void Settings::setDesktopPreviewEnabled(bool enabled) {
+    m_config["behavior/desktop_preview"] = enabled;
+}
+
+bool Settings::isSwitchAnimationEnabled() const {
+    return m_config.value("behavior/switch_animation", true);
+}
+
+void Settings::setSwitchAnimationEnabled(bool enabled) {
+    m_config["behavior/switch_animation"] = enabled;
 }
 
 }  // namespace VirtualDesktop

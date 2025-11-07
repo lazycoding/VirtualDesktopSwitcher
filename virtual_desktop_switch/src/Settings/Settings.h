@@ -15,6 +15,12 @@ public:
     static inline const std::wstring RENDERING_MODE_DIRECT2D_W = L"Direct2D";
     static inline const std::wstring RENDERING_MODE_GDIPLUS_W = L"GDI+";
 
+    // Mouse button constants
+    static inline const char* MOUSE_BUTTON_SIDE1 = "Side1";
+    static inline const char* MOUSE_BUTTON_SIDE2 = "Side2";
+    static inline const std::wstring MOUSE_BUTTON_SIDE1_W = L"Side1";
+    static inline const std::wstring MOUSE_BUTTON_SIDE2_W = L"Side2";
+
     /**
      * @brief Loads settings from config file
      * @param filePath Path to config file
@@ -29,41 +35,35 @@ public:
      */
     bool save(const std::wstring& filePath) const;
 
-    /**
-     * @brief Gets overlay color
-     * @return Color in hex format (#RRGGBBAA)
-     */
+    // Basic settings
+    bool isAutoStartEnabled() const;
+    void setAutoStartEnabled(bool enabled);
+    bool isTrayIconEnabled() const;
+    void setTrayIconEnabled(bool enabled);
+
+    // Gesture settings
+    std::wstring getTriggerButton() const;
+    void setTriggerButton(const std::wstring& button);
+    int getGestureSensitivity() const;
+    void setGestureSensitivity(int value);
     std::wstring getOverlayColor() const;
-
-    /**
-     * @brief Sets overlay color
-     * @param color Color in hex format (#RRGGBBAA)
-     */
     void setOverlayColor(const std::wstring& color);
-
-    /**
-     * @brief Gets gesture line width
-     * @return Width of gesture lines in pixels
-     */
     int getGestureLineWidth() const;
-
-    /**
-     * @brief Sets gesture line width
-     * @param value Width of gesture lines in pixels
-     */
     void setGestureLineWidth(int value);
 
-    /**
-     * @brief Gets the rendering mode (Direct2D or GDI+)
-     * @return Rendering mode string ("Direct2D" or "GDI+")
-     */
+    // Rendering settings
     std::wstring getRenderingMode() const;
-
-    /**
-     * @brief Sets the rendering mode
-     * @param mode Rendering mode string ("Direct2D" or "GDI+")
-     */
     void setRenderingMode(const std::wstring& mode);
+    int getTransparency() const;
+    void setTransparency(int value);
+
+    // Behavior settings
+    bool isDesktopCycleEnabled() const;
+    void setDesktopCycleEnabled(bool enabled);
+    bool isDesktopPreviewEnabled() const;
+    void setDesktopPreviewEnabled(bool enabled);
+    bool isSwitchAnimationEnabled() const;
+    void setSwitchAnimationEnabled(bool enabled);
 
     Settings() = default;
     ~Settings() = default;
