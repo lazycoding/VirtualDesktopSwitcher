@@ -27,7 +27,7 @@ WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR l
 
     std::cout << "Virtual Desktop Switcher starting with instance..." << hInstance << std::endl;
 
-    VirtualDesktopApp app = {hInstance};
+    VirtualDesktopApp app = {hInstance, true};
     run(&app);
 
     std::cout << "Application shutting down" << std::endl;

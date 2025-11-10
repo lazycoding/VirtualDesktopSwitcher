@@ -25,7 +25,7 @@ target_include_directories(VirtualDesktopSwitcher PRIVATE
 
 # Target Windows 10 (0x0A00) or later
 target_link_libraries(VirtualDesktopSwitcher PRIVATE 
-        user32 gdi32 d2d1 shell32 Shcore virtual_desktop_switch)  # Removed gdiplus, using standard GDI
+        user32 gdi32 d2d1 shell32 Shcore virtual_desktop_switch)
 target_compile_definitions(VirtualDesktopSwitcher PRIVATE 
         WIN32_LEAN_AND_MEAN 
         NOMINMAX 
@@ -38,7 +38,7 @@ target_compile_definitions(VirtualDesktopSwitcher PRIVATE
 
 # Copy vds.dll to executable directory after build
 add_custom_command(TARGET VirtualDesktopSwitcher POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    COMMAND ${CMAKE_COMMAND} -E copy
     $<TARGET_FILE:virtual_desktop_switch>
     $<TARGET_FILE_DIR:VirtualDesktopSwitcher>
     COMMENT "Copying virtual_desktop_switch.dll to executable directory"

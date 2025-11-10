@@ -12,6 +12,7 @@ extern "C" {
 
 typedef struct {
     HINSTANCE hInstance;
+    bool useSelfMessageLoop;
 } VirtualDesktopApp;
 
 VDS_API void run(VirtualDesktopApp* app);

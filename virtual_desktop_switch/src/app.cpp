@@ -75,6 +75,7 @@ bool Application::initialize() {
     auto callback = [this](int code, WPARAM wParam, LPARAM lParam) {
         UNREFERENCED_PARAMETER(code);
         if (m_settings.getTriggerButton() == MouseButton::None) {
+            trace("Trigger button is set to None, ignoring mouse events.\n");
             return;
         }
 
@@ -82,9 +83,8 @@ bool Application::initialize() {
         int triggerButton = static_cast<int>(m_settings.getTriggerButton());
         if (wParam == WM_XBUTTONDOWN || wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) {
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-            bool isTriggerButton = (wParam == static_cast<WPARAM>(WM_XBUTTONDOWN))
-                    ? (HIWORD(mouseData->mouseData) == triggerButton)
-                    : ((int)(wParam - WM_LBUTTONDOWN + 1) == triggerButton);
+            bool isTriggerButton = (wParam == WM_XBUTTONDOWN) ? (HIWORD(mouseData->mouseData) == (triggerButton - 2))
+                                                              : ((int)(wParam - WM_LBUTTONDOWN + 1) == triggerButton);
             if (!isTriggerButton) {
                 return;
             }
@@ -95,7 +95,7 @@ bool Application::initialize() {
             m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
         } else if (wParam == WM_XBUTTONUP || wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP) {
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-            bool isTriggerButton = (wParam == WM_XBUTTONUP) ? (HIWORD(mouseData->mouseData) == triggerButton)
+            bool isTriggerButton = (wParam == WM_XBUTTONUP) ? (HIWORD(mouseData->mouseData) == (triggerButton - 2))
                                                             : ((int)(wParam - WM_LBUTTONUP + 1) == triggerButton);
             if (!isTriggerButton) {
                 return;

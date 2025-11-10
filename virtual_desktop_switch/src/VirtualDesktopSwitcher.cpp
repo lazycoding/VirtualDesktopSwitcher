@@ -5,7 +5,9 @@ using namespace VirtualDesktop;
 void run(VirtualDesktopApp* app) {
     Application application(app->hInstance);
     application.initialize();
-    application.run();
+    if (app->useSelfMessageLoop) {
+        application.run();
+    }
 }
 
 HINSTANCE g_hInst = nullptr;

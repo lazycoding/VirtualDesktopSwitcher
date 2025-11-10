@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+﻿cmake_minimum_required(VERSION 3.15)
 project(virtual_desktop_switch LANGUAGES CXX RC)
 
 # Set C++ standard and compiler options
@@ -10,7 +10,7 @@ set(PROJ_NAME virtual_desktop_switch)
 
 # Project warnings
 if(MSVC)
-    add_compile_options(/W4 /WX /wd4267)
+    add_compile_options(/W4 /WX /wd4267 /wd4244)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-deprecated-literal-operator)
 endif()
