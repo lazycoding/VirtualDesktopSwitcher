@@ -1,5 +1,6 @@
 #include "VirtualDesktopSwitcher.h"
 #include "app.h"
+
 using namespace VirtualDesktop;
 void run(VirtualDesktopApp* app) {
     Application application(app->hInstance);

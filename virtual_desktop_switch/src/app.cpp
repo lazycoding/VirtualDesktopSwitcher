@@ -4,12 +4,16 @@
 #include <Windows.h>
 #include <ShellScalingApi.h>
 #include <Shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
+#include <winreg.h>
+#include <cstdlib>
+
+// Registry key path for auto-start programs
+const wchar_t* AUTO_START_KEY = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+const wchar_t* APP_NAME = L"VirtualDesktopSwitcher";
 
 namespace VirtualDesktop {
 
-Application::Application(HINSTANCE hInstance) :
-        m_hInstance(hInstance), m_trayIcon(hInstance, L"Virtual Desktop Switcher") {
+Application::Application(HINSTANCE hInstance) : m_hInstance(hInstance) {
 }
 
 bool Application::initialize() {
@@ -36,6 +40,11 @@ bool Application::initialize() {
         }
     }
 
+    // Configure auto-start based on settings
+    if (m_settings.isAutoStartEnabled() != isAutoStartConfigured()) {
+        setupAutoStart(m_settings.isAutoStartEnabled());
+    }
+
     if (!m_overlay.initialize(m_hInstance)) {
         return false;
     }
@@ -43,16 +52,18 @@ bool Application::initialize() {
     // Apply settings to overlay
     m_overlay.setSettings(m_settings);
 
-    if (!m_trayIcon.initialize()) {
-        return false;
+    if (m_settings.isTrayIconEnabled()) {
+        m_trayIcon = std::make_unique<TrayIcon>(m_hInstance, L"Virtual Desktop Switcher");
+        if (!m_trayIcon->initialize()) {
+            return false;
+        }
+        m_trayIcon->addMenuItem(L"Setting", []() {
+            // todo: open SettingUI dialog
+        });
+        m_trayIcon->addMenuItem(L"Exit", []() {
+            PostQuitMessage(0);
+        });
     }
-
-    m_trayIcon.addMenuItem(L"Setting", []() {
-        // todo: open SettingUI dialog
-    });
-    m_trayIcon.addMenuItem(L"Exit", []() {
-        PostQuitMessage(0);
-    });
 
     MouseHook& mouseHook = MouseHook::getInstance();
     if (!mouseHook.initialize()) {
@@ -63,11 +74,18 @@ bool Application::initialize() {
     // we create a local copy of the callback to use with the mouse hook
     auto callback = [this](int code, WPARAM wParam, LPARAM lParam) {
         UNREFERENCED_PARAMETER(code);
-        // Mouse side button pressed
-        if (wParam == WM_XBUTTONDOWN) {
+        if (m_settings.getTriggerButton() == MouseButton::None) {
+            return;
+        }
+
+        // Handle mouse events based on configured trigger button
+        int triggerButton = static_cast<int>(m_settings.getTriggerButton());
+        if (wParam == WM_XBUTTONDOWN || wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) {
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-            bool isBackButton = (HIWORD(mouseData->mouseData) == XBUTTON1);
-            if (!isBackButton) {
+            bool isTriggerButton = (wParam == static_cast<WPARAM>(WM_XBUTTONDOWN))
+                    ? (HIWORD(mouseData->mouseData) == triggerButton)
+                    : ((int)(wParam - WM_LBUTTONDOWN + 1) == triggerButton);
+            if (!isTriggerButton) {
                 return;
             }
             // Start gesture analysis
@@ -75,10 +93,11 @@ bool Application::initialize() {
             m_gestureAnalyzer.addPosition(mouseData->pt.x, mouseData->pt.y);
             m_overlay.show();
             m_overlay.updatePosition(mouseData->pt.x, mouseData->pt.y);
-        } else if (wParam == WM_XBUTTONUP) {
+        } else if (wParam == WM_XBUTTONUP || wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP) {
             auto* mouseData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-            bool isBackButton = (HIWORD(mouseData->mouseData) == XBUTTON1);
-            if (!isBackButton) {
+            bool isTriggerButton = (wParam == WM_XBUTTONUP) ? (HIWORD(mouseData->mouseData) == triggerButton)
+                                                            : ((int)(wParam - WM_LBUTTONUP + 1) == triggerButton);
+            if (!isTriggerButton) {
                 return;
             }
             // Analyze gesture and switch virtual desktop
@@ -113,6 +132,38 @@ void Application::run() {
         DispatchMessage(&msg);
     }
     m_settings.save(L"config.json");
+}
+
+bool Application::setupAutoStart(bool enable) {
+    HKEY hKey;
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER, AUTO_START_KEY, 0, KEY_WRITE, &hKey);
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
+
+    if (enable) {
+        wchar_t exePath[MAX_PATH];
+        GetModuleFileNameW(NULL, exePath, MAX_PATH);
+        result = RegSetValueExW(
+                hKey, APP_NAME, 0, REG_SZ, (const BYTE*)exePath, (wcslen(exePath) + 1) * sizeof(wchar_t));
+    } else {
+        result = RegDeleteValueW(hKey, APP_NAME);
+    }
+
+    RegCloseKey(hKey);
+    return result == ERROR_SUCCESS;
+}
+
+bool Application::isAutoStartConfigured() const {
+    HKEY hKey;
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER, AUTO_START_KEY, 0, KEY_QUERY_VALUE, &hKey);
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
+
+    result = RegQueryValueExW(hKey, APP_NAME, NULL, NULL, NULL, NULL);
+    RegCloseKey(hKey);
+    return result == ERROR_SUCCESS;
 }
 
 }  // namespace VirtualDesktop

@@ -10,11 +10,11 @@
 
 namespace VirtualDesktop {
 
-static std::unique_ptr<IRenderer> createRendererByMode(const std::string& mode) {
+static std::unique_ptr<IRenderer> createRendererByMode(RenderMode mode) {
     // 字符串比较双方忽略大小写
-    if (_stricmp(mode.c_str(), Settings::RENDERING_MODE_DIRECT2D) == 0) {
+    if (mode == RenderMode::Direct2D) {
         return std::make_unique<DxRenderer>();
-    } else if (_stricmp(mode.c_str(), Settings::RENDERING_MODE_GDIPLUS) == 0) {
+    } else if (mode == RenderMode::Gdiplus) {
         return std::make_unique<GdiRenderer>();
     } else {
         return std::make_unique<GdiRenderer>();
@@ -79,7 +79,7 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
         // Initialize GDI by default
         std::string defaultColor = "#6495EDAA";  // Default color
         float defaultWidth = 5.0f;               // Default width
-        m_renderer = createRendererByMode(Settings::RENDERING_MODE_GDIPLUS);
+        m_renderer = createRendererByMode(RenderMode::Gdiplus);
         if (m_renderer) {
             m_renderer->setTrailStyle(defaultColor, defaultWidth);
             m_renderer->initialize(m_hWnd);
@@ -94,7 +94,7 @@ void OverlayUI::switchRenderer() {
         return;
     }
 
-    std::string renderingMode = m_settings->getRenderingMode();
+    auto renderingMode = m_settings->getRenderingMode();
 
     // Create new renderer according to setting
     std::unique_ptr<IRenderer> newRenderer = createRendererByMode(renderingMode);
@@ -113,8 +113,8 @@ void OverlayUI::switchRenderer() {
     newRenderer->setTrailStyle(colorHex, lineWidth);
     if (!newRenderer->initialize(m_hWnd)) {
         // If initialization fails for requested renderer, fall back to GDI
-        if (_stricmp(renderingMode.c_str(), Settings::RENDERING_MODE_GDIPLUS) != 0) {
-            newRenderer = createRendererByMode(Settings::RENDERING_MODE_GDIPLUS);
+        if (!newRenderer->initialize(m_hWnd)) {
+            newRenderer = createRendererByMode(RenderMode::Gdiplus);
             newRenderer->setTrailStyle(colorHex, lineWidth);
             newRenderer->initialize(m_hWnd);
         }

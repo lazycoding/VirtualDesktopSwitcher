@@ -40,7 +40,7 @@ target_compile_definitions(${PROJ_NAME} PUBLIC BUILDING_DLL)
 if(WIN32)
     # Target Windows 10 (0x0A00) or later
     target_link_libraries(${PROJ_NAME} PRIVATE 
-        user32 gdi32 d2d1 shell32 Shcore)  # Removed gdiplus, using standard GDI
+        user32 gdi32 d2d1 shell32 Shcore shlwapi advapi32)  # Removed gdiplus, using standard GDI
     target_compile_definitions(${PROJ_NAME} PRIVATE 
         WIN32_LEAN_AND_MEAN 
         NOMINMAX 

@@ -5,7 +5,9 @@
 namespace VirtualDesktop {
 
 // 定义鼠标切换键枚举类型
-enum class MouseButton { None, Left, Right, Side1, Side2 };
+enum class MouseButton { None, Left, Right, X1, X2 };
+
+enum class RenderMode { Direct2D, Gdiplus };
 
 // mousebutton to string
 std::string mouseButtonToString(MouseButton button);
@@ -18,14 +20,6 @@ MouseButton stringToMouseButton(const std::string& button);
  */
 class Settings {
 public:
-    // Centralized rendering mode constants (UTF-8 and wide variants)
-    static inline const char* RENDERING_MODE_DIRECT2D = "Direct2D";
-    static inline const char* RENDERING_MODE_GDIPLUS = "GDI+";
-
-    // Mouse button constants
-    static inline const char* MOUSE_BUTTON_SIDE1 = "Side1";
-    static inline const char* MOUSE_BUTTON_SIDE2 = "Side2";
-
     /**
      * @brief Loads settings from config file
      * @param filePath Path to config file
@@ -47,8 +41,8 @@ public:
     void setTrayIconEnabled(bool enabled);
 
     // Gesture settings
-    std::string getTriggerButton() const;
-    void setTriggerButton(const std::string& button);
+    MouseButton getTriggerButton() const;
+    void setTriggerButton(MouseButton button);
     int getGestureSensitivity() const;
     void setGestureSensitivity(int value);
     std::string getOverlayColor() const;
@@ -57,8 +51,8 @@ public:
     void setGestureLineWidth(int value);
 
     // Rendering settings
-    std::string getRenderingMode() const;
-    void setRenderingMode(const std::string& mode);
+    RenderMode getRenderingMode() const;
+    void setRenderingMode(RenderMode mode);
     int getTransparency() const;
     void setTransparency(int value);
 

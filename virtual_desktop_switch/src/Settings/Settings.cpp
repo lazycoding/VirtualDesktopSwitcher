@@ -13,7 +13,7 @@ constexpr const char* DEFAULT_CONFIG = R"(
     "tray_icon": true
   },
   "gesture": {
-    "trigger_button": "Side1",
+    "trigger_button": "X1",
     "sensitivity": 5,
     "line_width": 5,
     "color": "#6495EDAA"
@@ -40,10 +40,10 @@ std::string mouseButtonToString(MouseButton button) {
             return "Left";
         case MouseButton::Right:
             return "Right";
-        case MouseButton::Side1:
-            return "Side1";
-        case MouseButton::Side2:
-            return "Side2";
+        case MouseButton::X1:
+            return "X1";
+        case MouseButton::X2:
+            return "X2";
         default:
             return "None";
     }
@@ -54,17 +54,16 @@ MouseButton stringToMouseButton(const std::string& button) {
     // 忽略字母大小写
     std::string buttonLower = button;
     std::transform(buttonLower.begin(), buttonLower.end(), buttonLower.begin(), ::tolower);
-    if (buttonLower == "side1") {
-        return MouseButton::Side1;
-    } else if (buttonLower == "side2") {
-        return MouseButton::Side2;
+    if (buttonLower == "x1") {
+        return MouseButton::X1;
+    } else if (buttonLower == "x2") {
+        return MouseButton::X2;
     } else if (buttonLower == "left") {
         return MouseButton::Left;
     } else if (buttonLower == "right") {
         return MouseButton::Right;
-    } else {
-        return MouseButton::None;
     }
+    return MouseButton::None;
 }
 
 bool Settings::load(const std::wstring& filePath) {
@@ -113,15 +112,13 @@ void Settings::setTrayIconEnabled(bool enabled) {
 }
 
 // Gesture settings
-std::string Settings::getTriggerButton() const {
-    std::string button = m_config.value("gesture/trigger_button", Settings::MOUSE_BUTTON_SIDE1);
-    return button;
+MouseButton Settings::getTriggerButton() const {
+    std::string button = m_config.value("gesture/trigger_button", "X1");
+    return stringToMouseButton(button);
 }
 
-void Settings::setTriggerButton(const std::string& button) {
-    if (button == Settings::MOUSE_BUTTON_SIDE1 || button == Settings::MOUSE_BUTTON_SIDE2) {
-        m_config["gesture/trigger_button"] = button;
-    }
+void Settings::setTriggerButton(MouseButton button) {
+    m_config["gesture/trigger_button"] = mouseButtonToString(button);
 }
 
 int Settings::getGestureSensitivity() const {
@@ -152,13 +149,13 @@ void Settings::setGestureLineWidth(int width) {
 }
 
 // Rendering settings
-std::string Settings::getRenderingMode() const {
-    std::string mode = m_config.value("rendering/mode", Settings::RENDERING_MODE_GDIPLUS);
+RenderMode Settings::getRenderingMode() const {
+    auto mode = RenderMode(m_config.value("rendering/mode", RenderMode::Gdiplus));
     return mode;
 }
 
-void Settings::setRenderingMode(const std::string& mode) {
-    if (mode == Settings::RENDERING_MODE_GDIPLUS || mode == Settings::RENDERING_MODE_DIRECT2D) {
+void Settings::setRenderingMode(RenderMode mode) {
+    if (mode == RenderMode::Gdiplus || mode == RenderMode::Direct2D) {
         m_config["rendering/mode"] = mode;
     }
 }

@@ -5,6 +5,7 @@
 #include "OverlayUI/OverlayUI.h"
 #include "Settings/Settings.h"
 #include "TrayIcon/TrayIcon.h"
+#include <memory>
 
 namespace VirtualDesktop {
 
@@ -15,8 +16,11 @@ public:
     void run();
 
 private:
+    bool setupAutoStart(bool enable);
+    bool isAutoStartConfigured() const;
+
     HINSTANCE m_hInstance;
-    TrayIcon m_trayIcon;
+    std::unique_ptr<TrayIcon> m_trayIcon;
     Settings m_settings;
     DesktopManager m_desktopManager;
     GestureAnalyzer m_gestureAnalyzer;
