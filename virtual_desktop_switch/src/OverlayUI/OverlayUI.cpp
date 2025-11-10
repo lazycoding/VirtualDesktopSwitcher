@@ -90,7 +90,8 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
 }
 
 void OverlayUI::switchRenderer() {
-    if (!m_settings) {
+    if (m_settings == NULL) {
+        trace("Settings not set, cannot switch renderer\n");
         return;
     }
 
@@ -98,8 +99,10 @@ void OverlayUI::switchRenderer() {
 
     // Create new renderer according to setting
     std::unique_ptr<IRenderer> newRenderer = createRendererByMode(renderingMode);
-    if (!newRenderer)
+    if (!newRenderer) {
+        trace("Failed create new renderer\n");
         return;
+    }
 
     // If there is an existing renderer, clear it before switching
     if (m_renderer) {
@@ -109,15 +112,16 @@ void OverlayUI::switchRenderer() {
     // Apply settings to new renderer
     std::string colorHex = m_settings->getOverlayColor();
     float lineWidth = static_cast<float>(m_settings->getGestureLineWidth());
-
+    trace("Switching renderer to mode %d with color %s and line width %.2f\n",
+          static_cast<int>(renderingMode),
+          colorHex.c_str(),
+          lineWidth);
     newRenderer->setTrailStyle(colorHex, lineWidth);
     if (!newRenderer->initialize(m_hWnd)) {
         // If initialization fails for requested renderer, fall back to GDI
-        if (!newRenderer->initialize(m_hWnd)) {
-            newRenderer = createRendererByMode(RenderMode::Gdiplus);
-            newRenderer->setTrailStyle(colorHex, lineWidth);
-            newRenderer->initialize(m_hWnd);
-        }
+        newRenderer = createRendererByMode(RenderMode::Gdiplus);
+        newRenderer->setTrailStyle(colorHex, lineWidth);
+        newRenderer->initialize(m_hWnd);
     }
 
     m_renderer = std::move(newRenderer);

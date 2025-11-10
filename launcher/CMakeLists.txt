@@ -18,6 +18,8 @@ add_executable(VirtualDesktopSwitcher WIN32 main.cpp)
 
 add_subdirectory(../virtual_desktop_switch virtual_desktop_switch)
 
+add_dependencies(VirtualDesktopSwitcher virtual_desktop_switch)
+
 # Include directories
 target_include_directories(VirtualDesktopSwitcher PRIVATE
  ../virtual_desktop_switch/include
@@ -36,7 +38,7 @@ target_compile_definitions(VirtualDesktopSwitcher PRIVATE
         _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
 )
 
-# Copy vds.dll to executable directory after build
+# Copy virtual_desktop_switch.dll to executable directory after build
 add_custom_command(TARGET VirtualDesktopSwitcher POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
     $<TARGET_FILE:virtual_desktop_switch>
