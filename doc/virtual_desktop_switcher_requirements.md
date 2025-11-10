@@ -22,10 +22,24 @@
 ## 3. 技术实现细节
 
 ### 3.1 鼠标事件监听技术方案
-- **底层API选择**：
-  - 使用Windows API的`SetWindowsHookEx`设置鼠标钩子
-  - 监听`WM_XBUTTONDOWN`和`WM_XBUTTONUP`消息
-  - 通过鼠标移动轨迹计算滑动方向
+- **回调机制**：
+  ```cpp
+  auto callback = [this](int code, WPARAM wParam, LPARAM lParam) {
+      // 处理XBUTTONDOWN/XBUTTONUP/MOUSEMOVE
+  };
+  ```
+- **事件处理流程**：
+  1. XBUTTONDOWN: 
+     - 验证XBUTTON1
+     - 初始化手势分析器
+     - 显示覆盖层
+  2. MOUSEMOVE: 
+     - 持续记录坐标
+     - 更新覆盖层位置
+  3. XBUTTONUP:
+     - 分析手势方向
+     - 触发桌面切换
+     - 隐藏覆盖层
   
 - **滑动检测算法**：
   - 侧键按下时记录初始鼠标位置
@@ -45,10 +59,18 @@
   - 调用`SwitchDesktop`方法切换
 
 ### 3.3 后台服务架构
-- **系统托盘应用**：
-  - 最小化到系统托盘区
-  - 右键菜单提供配置选项
-  - 实时状态显示(启用/禁用)
+- **初始化序列**：
+  1. 设置DPI感知：`SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)`
+  2. 定位配置文件路径：`GetModuleFileNameW` + `PathRemoveFileSpecW`
+  3. 加载/创建配置：`m_settings.load()`
+  4. 初始化组件：OverlayUI → TrayIcon → MouseHook
+- **消息循环**：
+  ```cpp
+  while (GetMessage(&msg, nullptr, 0, 0)) {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+  }
+  ```
 
 - **服务生命周期**：
   - 开机自启动注册表项
@@ -132,6 +154,13 @@
   - 系统休眠唤醒后恢复
 
 ## 6. 非功能需求
-- 性能：占用内存<50MB
-- 兼容性：Windows 10/11
-- 可靠性：不干扰其他鼠标功能
+- **代码规范**：
+  - 遵循C++17标准
+  - 使用PascalCase/camelCase命名
+  - 函数不超过20行（符合.cpp.mdr规范）
+- **资源管理**：
+  - RAII原则（如MouseHook单例）
+  - 智能指针管理资源
+- **错误处理**：
+  - 组件初始化失败立即终止
+  - 配置文件自动生成保障

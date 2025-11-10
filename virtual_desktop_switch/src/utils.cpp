@@ -36,4 +36,13 @@ std::wstring utf8_decode(const std::string& utf8_str) {
     MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), (int)utf8_str.size(), &strTo[0], size_needed);
     return strTo;
 }
+
+bool parseHexComponent(const std::string& hex, size_t offset, float& result) {
+    try {
+        result = static_cast<float>(std::stoul(hex.substr(offset, 2), nullptr, 16)) / 255.0f;
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
 }  // namespace VirtualDesktop

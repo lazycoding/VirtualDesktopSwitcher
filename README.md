@@ -64,7 +64,7 @@ cmake --build . --config Debug
 ```
 
 ## Configuration
-The application uses `config.json` for settings. Default location: `%APPDATA%\VirtualDesktopSwitcher\config.json`
+The application uses `config.json` for settings. Default location: Same directory as executable (config.json)
 
 ### Available Settings
 ```json
@@ -100,8 +100,11 @@ This project follows modern C++ best practices:
 
 ## Dependencies
 - **nlohmann/json**: Header-only JSON library for configuration management
-- **spdlog**: Logging library (referenced in code)
-- **Windows API**: System-level functionality
+- **Windows API Extensions**:
+  - ShellScalingApi.h (DPI awareness)
+  - Shlwapi.h (path manipulation)
+  - Libraries: shlwapi.lib
+- **Core Windows API**: System-level functionality
 
 ## License
 This project is provided for educational and development purposes.

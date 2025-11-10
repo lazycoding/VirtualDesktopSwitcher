@@ -53,30 +53,38 @@
 ## 3. 核心交互流程
 ```mermaid
 sequenceDiagram
-    participant MH as MouseHook(Singleton)
+    participant MH as MouseHook
     participant GA as GestureAnalyzer
     participant DM as DesktopManager
     participant OV as OverlayUI
     participant TI as TrayIcon
-    participant ST as Settings
     
-    MH->>GA: XBUTTONDOWN事件(开始手势)
-    GA->>GA: 清空位置记录，添加起始点
-    MH->>GA: MOUSEMOVE事件(记录轨迹)
-    GA->>GA: 持续添加位置点
-    MH->>GA: XBUTTONUP事件(结束手势)
-    GA->>GA: 分析手势方向
-    GA->>DM: 切换指令(Left/Right)
-    DM->>TI: 桌面切换完成通知
-    TI->>用户: 显示气泡通知
-    
-    Note over ST: 配置参数流向所有模块
-    ST->>GA: 手势灵敏度设置
-    ST->>OV: 覆盖层颜色配置
+    MH->>GA: XBUTTONDOWN(XBUTTON1)
+    GA->>GA: clearPositions()
+    GA->>GA: addPosition(x,y)
+    GA->>OV: show() + updatePosition(x,y)
+    MH->>GA: MOUSEMOVE
+    GA->>GA: addPosition(x,y)
+    GA->>OV: updatePosition(x,y)
+    MH->>GA: XBUTTONUP(XBUTTON1)
+    GA->>GA: analyzeGesture()
+    alt Left gesture
+        GA->>DM: switchDesktop(false)
+    else Right gesture
+        GA->>DM: switchDesktop(true)
+    end
+    GA->>OV: hide()
 ```
 ## 4. 技术栈特性
 - **C++标准**: 遵循C++17标准，使用现代C++特性
-- **设计模式**: Singleton、Observer、Factory等模式应用
-- **内存管理**: RAII原则，智能指针，自动资源清理
-- **异常处理**: 结构化异常处理与错误码结合
-- **跨平台准备**: Windows API抽象，便于未来扩展
+- **设计模式**: 
+  - Singleton (MouseHook)
+  - Observer (MouseHook回调)
+  - RAII (资源管理)
+- **Windows API扩展**:
+  - ShellScalingApi.h (DPI感知)
+  - Shlwapi.h (路径操作)
+  - 链接库: shlwapi.lib
+- **初始化保障**:
+  - 组件初始化失败立即终止
+  - 配置文件自动生成机制
