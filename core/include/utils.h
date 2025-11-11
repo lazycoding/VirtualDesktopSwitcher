@@ -1,15 +1,16 @@
 #pragma once
+#include "VirtualDesktopSwitcher.h"
 #include <Windows.h>
 #include <string>
 namespace VirtualDesktop {
 
-void trace(const char* format, ...);
+void VDS_API trace(const char* format, ...);
 
 void getScaleForMonitor(HWND hwnd, float& scaleX, float& scaleY);
 
-std::string utf8_encode(const std::wstring& wide_str);
+std::string VDS_API utf8_encode(const std::wstring& wide_str);
 
-std::wstring utf8_decode(const std::string& utf8_str);
+std::wstring VDS_API utf8_decode(const std::string& utf8_str);
 
 /**
  * @brief Parses a hexadecimal color component from a string

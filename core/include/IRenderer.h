@@ -1,4 +1,5 @@
 #pragma once
+#include "Settings.h"
 #include <Windows.h>
 #include <vector>
 #include <string>
@@ -15,5 +16,7 @@ public:
     virtual void render(const std::vector<POINT>& points) = 0;
     virtual void clear() = 0;
 };
+
+std::unique_ptr<IRenderer> createRendererByMode(RenderMode mode);
 
 }  // namespace VirtualDesktop

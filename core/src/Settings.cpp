@@ -3,8 +3,6 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
-#include <vector>
-
 #include "utils.h"
 
 namespace VirtualDesktop {
@@ -165,7 +163,8 @@ void Settings::setGestureLineWidth(int width) {
 // Rendering settings
 RenderMode Settings::getRenderingMode() const {
     std::string mode = m_config.value("rendering", nlohmann::json::object()).value("mode", "GDI+");
-    if (mode == "Direct2D") return RenderMode::Direct2D;
+    if (mode == "Direct2D")
+        return RenderMode::Direct2D;
     return RenderMode::Gdiplus;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "VirtualDesktopSwitcher.h"
 #include <Windows.h>
 #include <functional>
 #include <vector>
@@ -8,7 +9,7 @@ namespace VirtualDesktop {
 /**
  * @brief Captures and processes mouse events using Windows hook
  */
-class MouseHook {
+class VDS_API MouseHook {
 public:
     using EventCallback = std::function<void(int, WPARAM, LPARAM)>;
 

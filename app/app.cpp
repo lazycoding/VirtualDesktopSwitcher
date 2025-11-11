@@ -1,5 +1,5 @@
 ﻿#include "app.h"
-#include "MouseHook/MouseHook.h"
+#include "MouseHook.h"
 #include "utils.h"
 #include <Windows.h>
 #include <ShellScalingApi.h>

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "DesktopManager/DesktopManager.h"
-#include "GestureAnalyzer/GestureAnalyzer.h"
-#include "OverlayUI/OverlayUI.h"
-#include "Settings/Settings.h"
-#include "TrayIcon/TrayIcon.h"
-#include <memory>
+#include "DesktopManager.h"
+#include "GestureAnalyzer.h"
+#include "OverlayUI.h"
+#include "Settings.h"
+#include "TrayIcon.h"
 
 namespace VirtualDesktop {
 

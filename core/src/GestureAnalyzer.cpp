@@ -1,6 +1,6 @@
 ﻿#define _USE_MATH_DEFINES
 #include "GestureAnalyzer.h"
-
+#include <cmath>
 namespace VirtualDesktop {
 
 std::vector<std::vector<Point>> GestureAnalyzer::s_templates;

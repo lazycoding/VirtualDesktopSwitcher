@@ -1,4 +1,4 @@
-﻿#include "OverlayUI/DxRenderer.h"
+﻿#include "DxRenderer.h"
 #include <algorithm>
 #include <chrono>
 
@@ -237,9 +237,10 @@ void DxRenderer::render(const std::vector<POINT>& points) {
                 for (size_t i = 0; i + 1 < fpts.size(); i++) {
                     if (i + 2 < fpts.size()) {
                         FPoint controlPoint = fpts[i + 1];
-                        sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(
-                                D2D1::Point2F(controlPoint.x, controlPoint.y),
-                                D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
+                        sink->AddQuadraticBezier(
+                                D2D1::QuadraticBezierSegment(
+                                        D2D1::Point2F(controlPoint.x, controlPoint.y),
+                                        D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
                     } else {
                         sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
                     }

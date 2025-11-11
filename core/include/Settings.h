@@ -1,6 +1,7 @@
 ﻿#pragma once
-#include <string>
+#include "VirtualDesktopSwitcher.h"
 #include "nlohmann/json.hpp"
+#include <string>
 
 namespace VirtualDesktop {
 
@@ -18,7 +19,7 @@ MouseButton stringToMouseButton(const std::string& button);
 /**
  * @brief Manages application configuration
  */
-class Settings {
+class VDS_API Settings {
 public:
     /**
      * @brief Loads settings from config file

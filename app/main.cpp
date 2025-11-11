@@ -2,8 +2,7 @@
 #include <iostream>
 #include <io.h>
 #include <fcntl.h>
-#include "VirtualDesktopSwitcher.h"
-
+#include "app.h"
 void RedirectStdoutToConsole() {
 #ifdef _DEBUG
     if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
@@ -26,10 +25,9 @@ WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR l
     SetConsoleOutputCP(CP_UTF8);
 
     std::cout << "Virtual Desktop Switcher starting with instance..." << hInstance << std::endl;
-
-    VirtualDesktopApp app = {hInstance, true};
-    run(&app);
-
+    VirtualDesktop::Application app(hInstance);
+    app.initialize();
+    app.run();
     std::cout << "Application shutting down" << std::endl;
     return 0;
 }

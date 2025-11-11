@@ -1,4 +1,4 @@
-﻿#include "OverlayUI/GdiRenderer.h"
+﻿#include "GdiRenderer.h"
 #include <algorithm>
 #include <cstdint>
 #include <cmath>
@@ -17,9 +17,9 @@ GdiRenderer::GdiRenderer() :
         m_trailColor(RGB(100, 149, 237)),  // Default: Cornflower Blue
         m_alpha(0xAA),
         m_lineWidth(5.0f),
-        m_pBits(nullptr),
         m_width(0),
-        m_height(0) {
+        m_height(0),
+        m_pBits(nullptr) {
 }
 
 GdiRenderer::~GdiRenderer() {
@@ -67,15 +67,15 @@ bool parseHexComponent(const std::string& hex, size_t offset, BYTE& result) {
 }
 
 // Helper: convert RGBA (0-255) to premultiplied BGRA dword
-inline uint32_t premultiplied_bgra(BYTE r, BYTE g, BYTE b, BYTE a) {
-    // premultiply color channels by alpha
-    float af = a / 255.0f;
-    BYTE pr = static_cast<BYTE>(std::round(r * af));
-    BYTE pg = static_cast<BYTE>(std::round(g * af));
-    BYTE pb = static_cast<BYTE>(std::round(b * af));
-    return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(pr) << 16) | (static_cast<uint32_t>(pg) << 8) |
-            (static_cast<uint32_t>(pb));
-}
+// inline uint32_t premultiplied_bgra(BYTE r, BYTE g, BYTE b, BYTE a) {
+//     // premultiply color channels by alpha
+//     float af = a / 255.0f;
+//     BYTE pr = static_cast<BYTE>(std::round(r * af));
+//     BYTE pg = static_cast<BYTE>(std::round(g * af));
+//     BYTE pb = static_cast<BYTE>(std::round(b * af));
+//     return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(pr) << 16) | (static_cast<uint32_t>(pg) << 8) |
+//             (static_cast<uint32_t>(pb));
+// }
 }  // namespace
 
 COLORREF GdiRenderer::hexToCOLORREF(const std::string& hex) {

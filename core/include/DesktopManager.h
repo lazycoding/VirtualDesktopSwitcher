@@ -1,4 +1,5 @@
 #pragma once
+#include "VirtualDesktopSwitcher.h"
 #include <Windows.h>
 
 namespace VirtualDesktop {
@@ -6,7 +7,7 @@ namespace VirtualDesktop {
 /**
  * @brief Manages virtual desktop operations on Windows
  */
-class DesktopManager {
+class VDS_API DesktopManager {
 public:
     /**
      * @brief Switches to the next desktop

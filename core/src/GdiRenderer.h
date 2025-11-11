@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "OverlayUI/IRenderer.h"
+#include "IRenderer.h"
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -52,8 +52,8 @@ private:
     HBITMAP m_oldBitmap;
     HBRUSH m_backgroundBrush;
     HPEN m_pen;
-    COLORREF m_trailColor; // original RGB color
-    BYTE m_alpha; // user-specified alpha (0-255)
+    COLORREF m_trailColor;  // original RGB color
+    BYTE m_alpha;           // user-specified alpha (0-255)
     float m_lineWidth;
     RECT m_rcVirtual;
     LONG m_width;

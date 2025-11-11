@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "OverlayUI/IRenderer.h"
+#include "IRenderer.h"
 #include <Windows.h>
 #include <d2d1_1.h>
 #include <string>

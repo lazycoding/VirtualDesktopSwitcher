@@ -1,15 +1,17 @@
 ﻿#pragma once
-#include "IRenderer.h"
-#include "Settings/Settings.h"
+#include "VirtualDesktopSwitcher.h"
+#include "Settings.h"
 #include <Windows.h>
 #include <vector>
 #include <memory>
 
 namespace VirtualDesktop {
+
+class IRenderer;
 /**
  * @brief Renders overlay UI for gesture visualization
  */
-class OverlayUI {
+class VDS_API OverlayUI {
 public:
     OverlayUI();
     ~OverlayUI();

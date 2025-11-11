@@ -1,9 +1,9 @@
 #pragma once
 #define _USE_MATH_DEFINES
+#include "VirtualDesktopSwitcher.h"
 #include <cstdint>
 #include <vector>
 #include <utility>
-#include <cmath>
 
 namespace VirtualDesktop {
 
@@ -11,43 +11,44 @@ namespace VirtualDesktop {
 struct Point {
     double x;
     double y;
-    Point(double x = 0.0, double y = 0.0) : x(x), y(y) {}
-    
+    Point(double x = 0.0, double y = 0.0) : x(x), y(y) {
+    }
+
     // Operators needed for vector math
     Point operator+(const Point& other) const {
         return Point(x + other.x, y + other.y);
     }
-    
+
     Point operator-(const Point& other) const {
         return Point(x - other.x, y - other.y);
     }
-    
+
     Point operator*(double scalar) const {
         return Point(x * scalar, y * scalar);
     }
-    
+
     Point operator/(double scalar) const {
         return Point(x / scalar, y / scalar);
     }
-    
+
     Point& operator+=(const Point& other) {
         x += other.x;
         y += other.y;
         return *this;
     }
-    
+
     Point& operator-=(const Point& other) {
         x -= other.x;
         y -= other.y;
         return *this;
     }
-    
+
     Point& operator*=(double scalar) {
         x *= scalar;
         y *= scalar;
         return *this;
     }
-    
+
     Point& operator/=(double scalar) {
         x /= scalar;
         y /= scalar;
@@ -58,7 +59,7 @@ struct Point {
 /**
  * @brief Analyzes mouse gestures to detect swipe directions using $1 Unistroke Recognizer
  */
-class GestureAnalyzer {
+class VDS_API GestureAnalyzer {
 public:
     /**
      * @brief Possible gesture directions
@@ -97,17 +98,17 @@ public:
 
 private:
     // $1 Unistroke Recognizer constants
-    static constexpr int NUM_POINTS = 64;      // Number of points to resample each gesture to
-    static constexpr double ANGLE_RANGE = 45.0; // Angle range for rotation in degrees
-    static constexpr double ANGLE_PRECISION = 2.0; // Angle precision for search in degrees
-    static constexpr double DIAGONAL = 250.0;   // Square root of 250^2 + 250^2 (bounding box size)
-    static constexpr double HALF_DIAGONAL = 125.0; // Half of the diagonal
-    static constexpr double PHI = 0.618033988; // Golden ratio - 1 (0.5 * (-1.0 + std::sqrt(5.0)) calculated)
+    static constexpr int NUM_POINTS = 64;           // Number of points to resample each gesture to
+    static constexpr double ANGLE_RANGE = 45.0;     // Angle range for rotation in degrees
+    static constexpr double ANGLE_PRECISION = 2.0;  // Angle precision for search in degrees
+    static constexpr double DIAGONAL = 250.0;       // Square root of 250^2 + 250^2 (bounding box size)
+    static constexpr double HALF_DIAGONAL = 125.0;  // Half of the diagonal
+    static constexpr double PHI = 0.618033988;      // Golden ratio - 1 (0.5 * (-1.0 + std::sqrt(5.0)) calculated)
 
     std::vector<std::pair<int32_t, int32_t>> m_rawPositions;
     std::vector<Point> m_processedGesture;
-    static std::vector<std::vector<Point>> s_templates; // Predefined gesture templates
-    mutable bool m_useUnistroke; // Flag to determine which algorithm to use
+    static std::vector<std::vector<Point>> s_templates;  // Predefined gesture templates
+    mutable bool m_useUnistroke;                         // Flag to determine which algorithm to use
 
     // $1 Unistroke Recognizer methods
     std::vector<Point> resample(const std::vector<Point>& points, int n) const;
@@ -115,7 +116,8 @@ private:
     std::vector<Point> rotateBy(const std::vector<Point>& points, double radians) const;
     std::vector<Point> scaleTo(const std::vector<Point>& points, double size) const;
     std::vector<Point> translateTo(const std::vector<Point>& points, Point origin) const;
-    double distanceAtAngle(const std::vector<Point>& points, const std::vector<Point>& templatePoints, double radians) const;
+    double distanceAtAngle(const std::vector<Point>& points, const std::vector<Point>& templatePoints, double radians)
+            const;
     double distanceAtBestAngle(const std::vector<Point>& points, const std::vector<Point>& templatePoints) const;
     double pathDistance(const std::vector<Point>& pts1, const std::vector<Point>& pts2) const;
     Point centroid(const std::vector<Point>& points) const;
