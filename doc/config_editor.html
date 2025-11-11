@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Desktop Switcher 配置编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        h1 i {
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 500px;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            padding: 14px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            background: #e9ecef;
+        }
+        
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+        }
+        
+        .config-panel {
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .panel-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .panel-title {
+            font-size: 22px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #2980b9;
+        }
+        
+        .value-display {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 500;
+            color: #3498db;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .color-input {
+            flex: 1;
+        }
+        
+        .color-preview-large {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+        }
+        
+        .shortcut-key {
+            background: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .shortcut-action {
+            flex: 1;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .nav-item {
+                display: inline-block;
+                padding: 10px 15px;
+                margin: 5px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cog"></i> Virtual Desktop Switcher 配置编辑器</h1>
+            <div class="subtitle">自定义您的虚拟桌面切换体验</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="config-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-sliders-h"></i> 通用设置</h2>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section-title"><i class="fas fa-desktop"></i> 桌面设置</h3>
+                    
+                    <div class="form-group">
+                        <label>默认桌面数量</label>
+                        <select>
+                            <option>4</option>
+                            <option>3</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>8</option>
+                            <option>10</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox" checked> 自动创建新桌面
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox"> 循环切换桌面
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section-title"><i class="fas fa-mouse-pointer"></i> 手势设置</h3>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox" checked> 启用鼠标手势
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>手势触发距离 (像素)</label>
+                        <div class="slider-container">
+                            <input type="range" min="50" max="300" value="100" class="slider">
+                            <span class="value-display">100</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>手势触发时间 (毫秒)</label>
+                        <div class="slider-container">
+                            <input type="range" min="50" max="1000" value="250" class="slider">
+                            <span class="value-display">250</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section-title"><i class="fas fa-paint-brush"></i> 轨迹设置</h3>
+                    
+                    <div class="form-group">
+                        <label>轨迹颜色</label>
+                        <div class="color-picker">
+                            <div class="color-input">
+                                <input type="text" value="#6495EDAA" placeholder="#AARRGGBB">
+                            </div>
+                            <div class="color-preview-large" style="background: #6495EDAA;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>轨迹宽度</label>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="20" value="5" class="slider">
+                            <span class="value-display">5px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>渲染模式</label>
+                        <select>
+                            <option>Direct2D</option>
+                            <option>GDI+</option>
+                        </select>
+                    </div>
+                </div>
+                
+
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">重置为默认</button>
+                    <button class="btn btn-primary">保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 简单交互功能
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 滑块值显示更新
+        document.querySelectorAll('.slider').forEach(slider => {
+            const valueDisplay = slider.parentElement.querySelector('.value-display');
+            
+            slider.addEventListener('input', function() {
+                let value = this.value;
+                
+                // 为轨迹宽度添加单位
+                if (this.parentElement.parentElement.querySelector('label').textContent.includes('轨迹宽度')) {
+                    value += 'px';
+                }
+                
+                valueDisplay.textContent = value;
+            });
+            
+            // 初始化显示值
+            let initialValue = slider.value;
+            if (slider.parentElement.parentElement.querySelector('label').textContent.includes('轨迹宽度')) {
+                initialValue += 'px';
+            }
+            valueDisplay.textContent = initialValue;
+        });
+        
+        // 颜色选择器交互
+        document.querySelector('.color-preview-large').addEventListener('click', function() {
+            const colorValue = prompt('请输入颜色值 (格式: #AARRGGBB):', this.previousElementSibling.value);
+            if (colorValue) {
+                this.previousElementSibling.value = colorValue;
+                this.style.background = colorValue;
+            }
+        });
+    </script>
+</body>
+</html>
