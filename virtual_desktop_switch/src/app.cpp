@@ -29,7 +29,7 @@ bool Application::initialize() {
     // Combine directory with config filename
     std::wstring configPath = std::wstring(exePath) + L"\\config.json";
 
-    trace("Config file path: %ls\n", configPath.c_str());
+    trace("Config file path: %ls", configPath.c_str());
 
     // Try to load existing config file
     if (!m_settings.load(configPath.c_str())) {
@@ -75,7 +75,7 @@ bool Application::initialize() {
     auto callback = [this](int code, WPARAM wParam, LPARAM lParam) {
         UNREFERENCED_PARAMETER(code);
         if (m_settings.getTriggerButton() == MouseButton::None) {
-            trace("Trigger button is set to None, ignoring mouse events.\n");
+            trace("Trigger button is set to None, ignoring mouse events.");
             return;
         }
 
@@ -102,7 +102,7 @@ bool Application::initialize() {
             }
             // Analyze gesture and switch virtual desktop
             auto direction = m_gestureAnalyzer.analyzeGesture();
-            trace("Gesture direction: %d\n", static_cast<int>(direction));
+            trace("Gesture direction: %d", static_cast<int>(direction));
             if (direction == GestureAnalyzer::Direction::Left) {
                 m_desktopManager.switchDesktop(false);
             } else if (direction == GestureAnalyzer::Direction::Right) {

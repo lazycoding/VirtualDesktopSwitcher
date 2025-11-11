@@ -42,7 +42,7 @@ bool TrayIcon::initialize() {
 
     // Robust icon loading: ensure we have a valid module handle, try LoadImageW
     HINSTANCE hInst = g_hInst ? g_hInst : GetModuleHandleW(NULL);
-    trace("TrayIcon instance=>%p", hInst);
+    // trace("TrayIcon instance=>%p", hInst);
 
     HICON hIcon = (HICON)LoadImageW(hInst, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     if (!hIcon) {

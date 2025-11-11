@@ -91,7 +91,7 @@ bool OverlayUI::initialize(HINSTANCE hInst) {
 
 void OverlayUI::switchRenderer() {
     if (m_settings == NULL) {
-        trace("Settings not set, cannot switch renderer\n");
+        trace("Settings not set, cannot switch renderer");
         return;
     }
 
@@ -100,7 +100,7 @@ void OverlayUI::switchRenderer() {
     // Create new renderer according to setting
     std::unique_ptr<IRenderer> newRenderer = createRendererByMode(renderingMode);
     if (!newRenderer) {
-        trace("Failed create new renderer\n");
+        trace("Failed create new renderer");
         return;
     }
 
@@ -112,7 +112,7 @@ void OverlayUI::switchRenderer() {
     // Apply settings to new renderer
     std::string colorHex = m_settings->getOverlayColor();
     float lineWidth = static_cast<float>(m_settings->getGestureLineWidth());
-    trace("Switching renderer to mode %d with color %s and line width %.2f\n",
+    trace("Switching renderer to mode %d with color %s and line width %.2f",
           static_cast<int>(renderingMode),
           colorHex.c_str(),
           lineWidth);
@@ -235,7 +235,7 @@ void OverlayUI::updatePosition(int x, int y) {
     // Add new point to trajectory
     POINT newPoint = {x, y};
     m_trajectoryPoints.push_back(newPoint);
-    trace("point added...[%d,%d]", x, y);
+    // trace("point added...[%d,%d]", x, y);
 
     // Apply smoothing before rendering
     smoothTrajectory();
