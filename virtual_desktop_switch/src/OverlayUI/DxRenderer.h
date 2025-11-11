@@ -66,6 +66,7 @@ private:
     ID2D1DCRenderTarget* m_renderTarget = nullptr;
     ID2D1SolidColorBrush* m_brush = nullptr;
     ID2D1StrokeStyle* m_stroke = nullptr;
+    ID2D1PathGeometry* m_geometry = nullptr;  // reuse geometry to avoid per-frame allocations
     HDC m_memDC = nullptr;
     HBITMAP m_hDIB = nullptr;
     void* m_pBits = nullptr;

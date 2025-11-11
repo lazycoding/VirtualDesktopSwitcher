@@ -1,5 +1,6 @@
 ﻿#include "OverlayUI/DxRenderer.h"
 #include <algorithm>
+#include <chrono>
 
 #include <ShellScalingApi.h>
 #include <minwinbase.h>
@@ -46,6 +47,9 @@ D2D1_COLOR_F DxRenderer::hexToColorF(const std::string& hex) {
 void DxRenderer::setTrailStyle(const std::string& colorHex, float lineWidth) {
     m_trailColor = hexToColorF(colorHex);
     m_lineWidth = std::clamp(lineWidth, 1.0f, 10.0f);
+    if (m_brush) {
+        m_brush->SetColor(m_trailColor);
+    }
 }
 
 BOOL CALLBACK DxRenderer::monitorEnumProc(HMONITOR hMonitor, HDC hdc, LPRECT lprc, LPARAM data) {
@@ -122,10 +126,16 @@ void DxRenderer::createDIBAndRenderTarget() {
             D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE);
 
     if (SUCCEEDED(m_factory->CreateDCRenderTarget(&props, &m_renderTarget))) {
-        m_renderTarget->CreateSolidColorBrush(m_trailColor, &m_brush);
+        if (m_brush == nullptr)
+            m_renderTarget->CreateSolidColorBrush(m_trailColor, &m_brush);
         D2D1_STROKE_STYLE_PROPERTIES strokeProps = D2D1::StrokeStyleProperties(
                 D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND, D2D1_CAP_STYLE_ROUND, D2D1_LINE_JOIN_ROUND, 1.0f);
-        m_factory->CreateStrokeStyle(&strokeProps, nullptr, 0, &m_stroke);
+        if (m_stroke == nullptr)
+            m_factory->CreateStrokeStyle(&strokeProps, nullptr, 0, &m_stroke);
+        // Create reusable geometry if not present
+        if (m_geometry == nullptr) {
+            m_factory->CreatePathGeometry(&m_geometry);
+        }
     }
 }
 
@@ -141,6 +151,10 @@ void DxRenderer::destroyDIBAndRenderTarget() {
     if (m_renderTarget) {
         m_renderTarget->Release();
         m_renderTarget = nullptr;
+    }
+    if (m_geometry) {
+        m_geometry->Release();
+        m_geometry = nullptr;
     }
     if (m_memDC) {
         DeleteDC(m_memDC);
@@ -161,7 +175,7 @@ void DxRenderer::precomputeBezierTable() {
 }
 
 DxRenderer::FPoint DxRenderer::quadraticBezier(const FPoint& p0, const FPoint& p1, const FPoint& p2, float t) {
-    // Quadratic Bezier formula: B(t) = (1-t)^2 * P0 + 2*(1-t)*t * P1 + t^2 * P2
+    // Quadratic Bezier formula: B(t) = (1-t)^2 * P0 +2*(1-t)*t * P1 + t^2 * P2
     float oneMinusT = 1.0f - t;
     float oneMinusTSquared = oneMinusT * oneMinusT;
     float tSquared = t * t;
@@ -174,6 +188,16 @@ void DxRenderer::render(const std::vector<POINT>& points) {
     if (!m_renderTarget || points.size() < 2) {
         return;
     }
+
+    // Throttle renders to ~60 FPS to avoid excessive CPU/GPU load
+    static auto lastRender = std::chrono::steady_clock::time_point::min();
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastRender).count();
+    if (elapsed < 16) {
+        // Skip this frame if it's too soon
+        return;
+    }
+    lastRender = now;
 
     // Convert screen coordinates to window-relative physical pixel coordinates
     std::vector<FPoint> fpts;
@@ -202,56 +226,44 @@ void DxRenderer::render(const std::vector<POINT>& points) {
     m_renderTarget->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
     m_renderTarget->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE);
 
-    // Create geometry for rendering
-    ID2D1PathGeometry* geo = nullptr;
-    if (points.size() >= 2) {
-        // Use path geometry for smooth rendering
-        if (SUCCEEDED(m_factory->CreatePathGeometry(&geo))) {
-            ID2D1GeometrySink* sink = nullptr;
-            if (SUCCEEDED(geo->Open(&sink))) {
-                // Start from first point
-                sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
+    // Reuse geometry: populate m_geometry's sink only if point count changed significantly
+    ID2D1PathGeometry* geo = m_geometry;
+    ID2D1GeometrySink* sink = nullptr;
+    if (geo) {
+        if (SUCCEEDED(geo->Open(&sink))) {
+            sink->BeginFigure(D2D1::Point2F(fpts[0].x, fpts[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
 
-                // Use polylines for smoother basic line drawing or Bezier for even smoother curves
-                if (points.size() >= 3) {
-                    // Use quadratic Bezier curves for very smooth rendering
-                    for (size_t i = 0; i + 1 < fpts.size(); i++) {
-                        if (i + 2 < fpts.size()) {
-                            // Use middle point as control point for smoother curve
-                            FPoint controlPoint = fpts[i + 1];  // Use the middle point as control
-                            sink->AddQuadraticBezier(
-                                    D2D1::QuadraticBezierSegment(
-                                            D2D1::Point2F(controlPoint.x, controlPoint.y),
-                                            D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
-                        } else {
-                            // For the last segment
-                            sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
-                        }
-                    }
-                } else {
-                    // For 2 points, just draw a straight line
-                    for (size_t i = 1; i < fpts.size(); i++) {
-                        sink->AddLine(D2D1::Point2F(fpts[i].x, fpts[i].y));
+            if (fpts.size() >= 3) {
+                for (size_t i = 0; i + 1 < fpts.size(); i++) {
+                    if (i + 2 < fpts.size()) {
+                        FPoint controlPoint = fpts[i + 1];
+                        sink->AddQuadraticBezier(D2D1::QuadraticBezierSegment(
+                                D2D1::Point2F(controlPoint.x, controlPoint.y),
+                                D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y)));
+                    } else {
+                        sink->AddLine(D2D1::Point2F(fpts[i + 1].x, fpts[i + 1].y));
                     }
                 }
-
-                sink->EndFigure(D2D1_FIGURE_END_OPEN);
-                sink->Close();
-                sink->Release();
-
-                m_brush->SetColor(m_trailColor);
-                m_renderTarget->DrawGeometry(geo, m_brush, m_lineWidth, m_stroke);
+            } else {
+                for (size_t i = 1; i < fpts.size(); i++) {
+                    sink->AddLine(D2D1::Point2F(fpts[i].x, fpts[i].y));
+                }
             }
-            geo->Release();
+
+            sink->EndFigure(D2D1_FIGURE_END_OPEN);
+            sink->Close();
+            sink->Release();
+            sink = nullptr;
         }
     }
 
+    if (geo) {
+        m_brush->SetColor(m_trailColor);
+        m_renderTarget->DrawGeometry(geo, m_brush, m_lineWidth, m_stroke);
+    }
+
     HRESULT hr = m_renderTarget->EndDraw();
-    // D2D1_ERROR_RECREATE_TARGET was used in older versions of Direct2D
-    // In newer versions, we should check for D2DERR_RECREATE_TARGET or generic errors
     if (hr == D2DERR_RECREATE_TARGET) {
-        // If the render target needs to be recreated, handle it appropriately
-        // For now, just return and let it be recreated on next render call
         return;
     }
 
