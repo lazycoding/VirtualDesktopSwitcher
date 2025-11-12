@@ -1,56 +1,56 @@
 ---
-description: Guidelines for writing clean, maintainable, and human-readable code. Apply these rules when writing or reviewing code to ensure consistency and quality.
+description: 编写干净、可维护、易于阅读的代码指南。在编写或审查代码时应用这些规则以确保一致性和质量。
 globs: 
 alwaysApply: true
 ---
-# Clean Code Guidelines
+# 清洁代码指南
 
-## Constants Over Magic Numbers
-- Replace hard-coded values with named constants
-- Use descriptive constant names that explain the value's purpose
-- Keep constants at the top of the file or in a dedicated constants file
+## 常量优于魔法数字
+- 用命名常量替换硬编码值
+- 使用描述性的常量名称来解释值的用途
+- 将常量放在文件顶部或专用的常量文件中
 
-## Meaningful Names
-- Variables, functions, and classes should reveal their purpose
-- Names should explain why something exists and how it's used
-- Avoid abbreviations unless they're universally understood
+## 有意义的命名
+- 变量、函数和类应该揭示其目的
+- 名称应该解释为什么存在以及如何使用
+- 除非是普遍理解的缩写，否则避免使用缩写
 
-## Smart Comments
-- Don't comment on what the code does - make the code self-documenting
-- Use comments to explain why something is done a certain way
-- Document APIs, complex algorithms, and non-obvious side effects
+## 智能注释
+- 不要注释代码做了什么 - 让代码自文档化
+- 使用注释来解释为什么以某种方式完成某事
+- 记录API、复杂算法和非明显的副作用
 
-## Single Responsibility
-- Each function should do exactly one thing
-- Functions should be small and focused
-- If a function needs a comment to explain what it does, it should be split
+## 单一职责
+- 每个函数应该只做一件事
+- 函数应该小而专注
+- 如果一个函数需要注释来解释它的作用，应该将其拆分
 
-## DRY (Don't Repeat Yourself)
-- Extract repeated code into reusable functions
-- Share common logic through proper abstraction
-- Maintain single sources of truth
+## DRY（不要重复自己）
+- 将重复的代码提取到可重用的函数中
+- 通过适当的抽象共享通用逻辑
+- 维护单一的事实来源
 
-## Clean Structure
-- Keep related code together
-- Organize code in a logical hierarchy
-- Use consistent file and folder naming conventions
+## 清洁结构
+- 将相关代码保持在一起
+- 以逻辑层次结构组织代码
+- 使用一致的文件和文件夹命名约定
 
-## Encapsulation
-- Hide implementation details
-- Expose clear interfaces
-- Move nested conditionals into well-named functions
+## 封装
+- 隐藏实现细节
+- 暴露清晰的接口
+- 将嵌套条件移动到命名良好的函数中
 
-## Code Quality Maintenance
-- Refactor continuously
-- Fix technical debt early
-- Leave code cleaner than you found it
+## 代码质量维护
+- 持续重构
+- 尽早修复技术债务
+- 让代码比你发现时更干净
 
-## Testing
-- Write tests before fixing bugs
-- Keep tests readable and maintainable
-- Test edge cases and error conditions
+## 测试
+- 在修复错误之前编写测试
+- 保持测试可读和可维护
+- 测试边界情况和错误条件
 
-## Version Control
-- Write clear commit messages
-- Make small, focused commits
-- Use meaningful branch names 
+## 版本控制
+- 编写清晰的提交消息
+- 进行小而专注的提交
+- 使用有意义的分支名称

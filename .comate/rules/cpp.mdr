@@ -1,134 +1,134 @@
 ---
-description: 
+description: C++编程指南
 globs: **/*.c,**/*.cpp,**/*.h,**/*.hpp,**/*.cxx,CMakeLists.txt,*.cmake,conanfile.txt,Makefile,**/*.cc
 alwaysApply: false
 ---
-# C++ Programming Guidelines
+# C++编程指南
 
-## Basic Principles
+## 基本原则
 
-- Use English for all code and documentation.
-- Always declare the type of each variable and function (parameters and return value).
-- Create necessary types and classes.
-- Use Doxygen style comments to document public classes and methods.
-- Don't leave blank lines within a function.
-- Follow the one-definition rule (ODR).
+- 所有代码和文档使用英文
+- 始终声明每个变量和函数的类型(参数和返回值)
+- 创建必要的类型和类
+- 使用Doxygen风格的注释来记录公共类和方法
+- 函数内不要留空行
+- 遵循单一定义规则(ODR)
 
-## Nomenclature
+## 命名规范
 
-- Use PascalCase for classes and structures.
-- Use camelCase for variables, functions, and methods.
-- Use ALL_CAPS for constants and macros.
-- Use snake_case for file and directory names.
-- Use UPPERCASE for environment variables.
-- Avoid magic numbers and define constants.
-- Start each function with a verb.
-- Use verbs for boolean variables. Example: isLoading, hasError, canDelete, etc.
-- Use complete words instead of abbreviations and ensure correct spelling.
-  - Except for standard abbreviations like API, URL, etc.
-  - Except for well-known abbreviations:
-    - i, j, k for loops
-    - err for errors
-    - ctx for contexts
-    - req, res for request/response parameters
+- 类和结构体使用PascalCase
+- 变量、函数和方法使用camelCase
+- 常量和宏使用ALL_CAPS
+- 文件和目录名使用snake_case
+- 环境变量使用UPPERCASE
+- 避免魔法数字，定义常量
+- 每个函数以动词开头
+- 布尔变量使用动词。例如：isLoading, hasError, canDelete等
+- 使用完整单词而非缩写，并确保拼写正确
+  - 标准缩写如API、URL等除外
+  - 众所周知的缩写除外：
+    - 循环使用i, j, k
+    - 错误使用err
+    - 上下文使用ctx
+    - 请求/响应参数使用req, res
 
-## Functions
+## 函数
 
-- Write short functions with a single purpose. Less than 20 instructions.
-- Name functions with a verb and something else.
-- If it returns a boolean, use isX or hasX, canX, etc.
-- If it doesn't return anything (void), use executeX or saveX, etc.
-- Avoid nesting blocks by:
-  - Early checks and returns.
-  - Extraction to utility functions.
-- Use standard library algorithms (std::for_each, std::transform, std::find, etc.) to avoid function nesting.
-- Use lambda functions for simple operations.
-- Use named functions for non-simple operations.
-- Use default parameter values instead of checking for null or nullptr.
-- Reduce function parameters using structs or classes
-  - Use an object to pass multiple parameters.
-  - Use an object to return multiple results.
-  - Declare necessary types for input arguments and output.
-- Use a single level of abstraction.
+- 编写具有单一目的的短函数。少于20条指令
+- 函数命名使用动词加其他内容
+- 如果返回布尔值，使用isX、hasX、canX等
+- 如果不返回任何内容(void)，使用executeX或saveX等
+- 通过以下方式避免嵌套块：
+  - 提前检查和返回
+  - 提取到工具函数中
+- 使用标准库算法(std::for_each, std::transform, std::find等)避免函数嵌套
+- 简单操作使用lambda函数
+- 非简单操作使用命名函数
+- 使用默认参数值而不是检查null或nullptr
+- 使用结构体或类减少函数参数
+  - 使用对象传递多个参数
+  - 使用对象返回多个结果
+  - 为输入参数和输出声明必要的类型
+- 使用单一抽象层次
 
-## Data
+## 数据
 
-- Don't abuse primitive types and encapsulate data in composite types.
-- Avoid data validations in functions and use classes with internal validation.
-- Prefer immutability for data.
-- Use const for data that doesn't change.
-- Use constexpr for compile-time constants.
-- Use std::optional for possibly null values.
+- 不要滥用基本类型，将数据封装在复合类型中
+- 避免在函数中进行数据验证，使用具有内部验证的类
+- 数据优先不可变性
+- 不变数据使用const
+- 编译时常量使用constexpr
+- 可能为null的值使用std::optional
 
-## Classes
+## 类
 
-- Follow SOLID principles.
-- Prefer composition over inheritance.
-- Declare interfaces as abstract classes or concepts.
-- Write small classes with a single purpose.
-  - Less than 200 instructions.
-  - Less than 10 public methods.
-  - Less than 10 properties.
-- Use the Rule of Five (or Rule of Zero) for resource management.
-- Make member variables private and provide getters/setters where necessary.
-- Use const-correctness for member functions.
+- 遵循SOLID原则
+- 优先组合而非继承
+- 将接口声明为抽象类或概念
+- 编写具有单一目的的小类
+  - 少于200条指令
+  - 少于10个公共方法
+  - 少于10个属性
+- 资源管理使用五法则(或零法则)
+- 成员变量设为私有，必要时提供getter/setter
+- 成员函数使用const正确性
 
-## Exceptions
+## 异常
 
-- Use exceptions to handle errors you don't expect.
-- If you catch an exception, it should be to:
-  - Fix an expected problem.
-  - Add context.
-  - Otherwise, use a global handler.
-- Use std::optional, std::expected, or error codes for expected failures.
+- 使用异常处理意料之外的错误
+- 捕获异常应该是为了：
+  - 解决预期问题
+  - 添加上下文
+  - 否则使用全局处理器
+- 预期失败使用std::optional、std::expected或错误码
 
-## Memory Management
+## 内存管理
 
-- Prefer smart pointers (std::unique_ptr, std::shared_ptr) over raw pointers.
-- Use RAII (Resource Acquisition Is Initialization) principles.
-- Avoid memory leaks by proper resource management.
-- Use std::vector and other standard containers instead of C-style arrays.
+- 优先使用智能指针(std::unique_ptr, std::shared_ptr)而非原始指针
+- 使用RAII(资源获取即初始化)原则
+- 通过适当的资源管理避免内存泄漏
+- 使用std::vector和其他标准容器而非C风格数组
 
-## Testing
+## 测试
 
-- Follow the Arrange-Act-Assert convention for tests.
-- Name test variables clearly.
-- Follow the convention: inputX, mockX, actualX, expectedX, etc.
-- Write unit tests for each public function.
-- Use test doubles to simulate dependencies.
-  - Except for third-party dependencies that are not expensive to execute.
-- Write integration tests for each module.
-- Follow the Given-When-Then convention.
+- 测试遵循Arrange-Act-Assert约定
+- 清晰命名测试变量
+- 遵循约定：inputX, mockX, actualX, expectedX等
+- 为每个公共函数编写单元测试
+- 使用测试替身模拟依赖
+  - 执行成本不高的第三方依赖除外
+- 为每个模块编写集成测试
+- 遵循Given-When-Then约定
 
-## Project Structure
+## 项目结构
 
-- Use modular architecture
-- Organize code into logical directories:
-  - include/ for header files
-  - src/ for source files
-  - test/ for test files
-  - lib/ for libraries
-  - doc/ for documentation
-- Use CMake or similar build system.
-- Separate interface (.h) from implementation (.cpp).
-- Use namespaces to organize code logically.
-- Create a core namespace for foundational components.
-- Create a utils namespace for utility functions.
+- 使用模块化架构
+- 代码组织到逻辑目录中：
+  - include/存放头文件
+  - src/存放源文件
+  - test/存放测试文件
+  - lib/存放库
+  - doc/存放文档
+- 使用CMake或类似构建系统
+- 分离接口(.h)和实现(.cpp)
+- 使用命名空间逻辑组织代码
+- 为核心组件创建core命名空间
+- 为工具函数创建utils命名空间
 
-## Standard Library
+## 标准库
 
-- Use the C++ Standard Library whenever possible.
-- Prefer std::string over C-style strings.
-- Use std::vector, std::map, std::unordered_map, etc. for collections.
-- Use std::optional, std::variant, std::any for modern type safety.
-- Use std::filesystem for file operations.
-- Use std::chrono for time-related operations.
+- 尽可能使用C++标准库
+- 优先使用std::string而非C风格字符串
+- 集合使用std::vector、std::map、std::unordered_map等
+- 现代类型安全使用std::optional、std::variant、std::any
+- 文件操作使用std::filesystem
+- 时间相关操作使用std::chrono
 
-## Concurrency
+## 并发
 
-- Use std::thread, std::mutex, std::lock_guard for thread safety.
-- Prefer task-based parallelism over thread-based parallelism.
-- Use std::atomic for atomic operations.
-- Avoid data races by proper synchronization.
-- Use thread-safe data structures when necessary.
+- 线程安全使用std::thread、std::mutex、std::lock_guard
+- 优先基于任务的并行而非基于线程的并行
+- 原子操作使用std::atomic
+- 通过适当同步避免数据竞争
+- 必要时使用线程安全数据结构
 

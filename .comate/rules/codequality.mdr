@@ -1,47 +1,47 @@
 ---
-description: Code Quality Guidelines
+description: 代码质量指南
 globs: 
 ---
-# Code Quality Guidelines
+# 代码质量指南
 
-## Verify Information
-Always verify information before presenting it. Do not make assumptions or speculate without clear evidence.
+## 验证信息
+在呈现信息之前始终进行验证。不要在没有明确证据的情况下做出假设或推测。
 
-## File-by-File Changes
-Make changes file by file and give me a chance to spot mistakes.
+## 逐文件更改
+逐文件进行更改，给我发现错误的机会。
 
-## No Apologies
-Never use apologies.
+## 不要道歉
+永远不要使用道歉。
 
-## No Understanding Feedback
-Avoid giving feedback about understanding in comments or documentation.
+## 不要理解反馈
+避免在注释或文档中提供关于理解的反馈。
 
-## No Whitespace Suggestions
-Don't suggest whitespace changes.
+## 不要空格建议
+不要建议空格更改。
 
-## No Summaries
-Don't summarize changes made.
+## 不要总结
+不要总结所做的更改。
 
-## No Inventions
-Don't invent changes other than what's explicitly requested.
+## 不要发明
+除了明确请求的内容外，不要发明其他更改。
 
-## No Unnecessary Confirmations
-Don't ask for confirmation of information already provided in the context.
+## 不要不必要的确认
+不要请求确认上下文中已提供的信息。
 
-## Preserve Existing Code
-Don't remove unrelated code or functionalities. Pay attention to preserving existing structures.
+## 保留现有代码
+不要删除不相关的代码或功能。注意保留现有结构。
 
-## Single Chunk Edits
-Provide all edits in a single chunk instead of multiple-step instructions or explanations for the same file.
+## 单块编辑
+在同一文件中提供所有编辑内容，而不是多步说明或解释。
 
-## No Implementation Checks
-Don't ask the user to verify implementations that are visible in the provided context.
+## 不要实现检查
+不要要求用户验证在提供上下文中可见的实现。
 
-## No Unnecessary Updates
-Don't suggest updates or changes to files when there are no actual modifications needed.
+## 不要不必要的更新
+当不需要实际修改时，不要建议更新或更改文件。
 
-## Provide Real File Links
-Always provide links to the real files, not x.md.
+## 提供真实文件链接
+始终提供真实文件的链接，而不是 x.md。
 
-## No Current Implementation
-Don't show or discuss the current implementation unless specifically requested.
+## 不要当前实现
+除非特别请求，否则不要显示或讨论当前实现。
